@@ -176,6 +176,7 @@ class OutputFormat:
     def link(string: str) -> str:
         return URLFormat.from_string(string)
 
+
 class Timings:
     START = datetime.now()
     END_EST_SECS = 0
@@ -184,6 +185,24 @@ class Timings:
 
 
 Timings.START = datetime.now()
+tsv_path = pathlib.Path(os.path.join(f'{Statics.DATA_DIR}', 'TSLA.tsv'))
+tsv_path_previous = pathlib.Path(os.path.join(f'{Statics.DATA_DIR}', 'TSLA_PREV.tsv'))
+if not tsv_path.is_file():
+    tsv_path.write_text('', encoding=Statics.UTF8)
+
+cur_text = tsv_path.read_text(encoding=Statics.UTF8)
+tsv_path_previous.write_text(cur_text, encoding=Statics.UTF8)
+tsv_path.write_text('', encoding=Statics.UTF8)
+
+
+def do_update_file_write(additions: list):
+    active_text = tsv_path.read_text(encoding=Statics.UTF8)
+    active_text_split = active_text.splitlines()
+    for addition in additions:
+        active_text_split.append(addition)
+    updated_text = '\n'.join(set(active_text_split))
+    tsv_path.write_text(updated_text, encoding=Statics.UTF8)
+
 
 def run(offset_start: int, offset_end: int, pages: int):
     total_runs = ((offset_end - offset_start) * pages)
@@ -194,9 +213,14 @@ def run(offset_start: int, offset_end: int, pages: int):
     current_runs = 0
     final_results = []
     for i in range(offset_start, offset_end):
+        if len(final_results) > 100:
+            do_update_file_write(final_results)
+            final_results.clear()
+            if len(final_results) > 0:
+                final_results = []
+
         timings.int = i
         timings.update()
-        # results = []
         for j in range(0, pages):
             current_runs += 1
             print(f'Starting {current_runs} / {total_runs}   -   ({datetime.now() - Timings.START}).')
@@ -241,18 +265,13 @@ def run(offset_start: int, offset_end: int, pages: int):
                     _href = OutputFormat.link(title.get('href'))
                     final_results.append(f'{timings.ymd}|{_href}|{_text}|{_desc}')
 
-        # final_results.append('\n'.join(results))
-        # print(f'Items: {len(results)}\n\n{joined}')
-    return '\n'.join(set(final_results))
+    do_update_file_write(final_results)
 
 if __name__ == '__main__':
-    text = run(0, 5, 3)
-    tsv_path = pathlib.Path(os.path.join(f'{Statics.DATA_DIR}', 'TSLA.tsv'))
-    if not tsv_path.is_file():
-        tsv_path.write_text('', encoding=Statics.UTF8)
-    cur_text = tsv_path.read_text(encoding=Statics.UTF8)
-    if text != cur_text:
-        tsv_path.write_text(text, encoding=Statics.UTF8)
+    run(0, 5, 2)
+    # cur_text = tsv_path.read_text(encoding=Statics.UTF8)
+    # if text != cur_text:
+    # tsv_path.write_text(text, encoding=Statics.UTF8)
     Timings.END_REAL = datetime.now()
     print(f'Finished At: {Timings.END_REAL}')
     print(f'Original Est: {Timings.END_EST}')
