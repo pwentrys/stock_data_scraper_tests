@@ -1,11 +1,7 @@
-import sys
-import pathlib
-import time
 import os
-
+import pathlib
 import requests
-from urllib.parse import quote, urlparse
-from bs4 import BeautifulSoup
+import time
 
 from utils.OutputFormats import OutputFormats
 from utils.SoupTags import SoupTags
@@ -39,30 +35,17 @@ def run(offset_start: int, offset_end: int, pages: int):
             requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
             requests_html.write_text(text, encoding=Statics.UTF8)
 
-            # soup_b_results = BeautifulSoup(txt, Statics.PARSER)
-            # b_results = soup_b_results.find(id='b_results')
             b_results = SoupTags.using_type_and_id(text, 'ol', 'b_results')
-            # soup_li__b_algo = BeautifulSoup(str(b_results), Statics.PARSER)
             b_algo = SoupTags.using_type_and_class(str(b_results), 'li', 'b_algo')
-            # soupr_algo = soup_li__b_algo.find_all('li', class_='b_algo')
 
-            # soup_link = BeautifulSoup(str(soupr_algo), Statics.PARSER)
-            # soupr_t = soup_link.find_all(SoupTags.a_link_title)
-            # soupr_d = soup_link.find_all(SoupTags.a_link_desc)
-
-            # for k in range(0, len(soupr_t)):
             for _item in b_algo:
                 item = str(_item)
                 _continue = False
-                # title = soupr_t[k]
-                # desc = soupr_d[k]
                 _desc = f'{_item.div.p.text}'.strip()
                 if _desc.startswith(timings_offset.bdy):
                     _continue = True
                 else:
                     b_dt = SoupTags.using_type_and_class_one(item, 'span', 'news_dt')
-                    # soup_dt = BeautifulSoup(str(item), Statics.PARSER)
-                    # dt = soup_dt.find_all(SoupTags.a_link_news_dt)
                     if b_dt is not None:
                         _dt = OutputFormats.entry(b_dt.text)
                         if _dt == timings_offset.days_ago:
