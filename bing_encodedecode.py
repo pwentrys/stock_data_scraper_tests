@@ -268,7 +268,7 @@ def run(offset_start: int, offset_end: int, pages: int):
     do_update_file_write(final_results)
 
 if __name__ == '__main__':
-    run(0, 3000, 2)
+    run(0, 3000, 5)
     # cur_text = tsv_path.read_text(encoding=Statics.UTF8)
     # if text != cur_text:
     # tsv_path.write_text(text, encoding=Statics.UTF8)
