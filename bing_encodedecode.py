@@ -18,7 +18,7 @@ class Statics:
     WORK_DIR = pathlib.Path(os.path.join(SYSPATH, HTMLS))
     DATA_DIR = pathlib.Path(os.path.join(SYSPATH, DATA))
     TODAY = datetime.now()
-    SLEEP_TIME = 4
+    SLEEP_TIME = 2
 
     @staticmethod
     def ensure_work_dir():
@@ -37,6 +37,11 @@ class Statics:
 
 
 Statics.ensure_dirs()
+
+
+class DTFormats:
+    BDY = '%b %d, %Y'  # Jun 1st, 2017
+    YMD = '%Y%m%d'  # 20170601
 
 
 class TimingsOffset:
@@ -78,10 +83,10 @@ class TimingsOffset:
         return self.dt.timestamp()
 
     def _update_bdy(self) -> str:
-        return self.dt.strftime('%b %d, %Y')
+        return self.dt.strftime(DTFormats.BDY)
 
     def _update_ymd(self) -> str:
-        return self.dt.strftime('%Y%m%d')
+        return self.dt.strftime(DTFormats.YMD)
 
     def _update_datetime(self) -> datetime:
         return self.today - self.td
