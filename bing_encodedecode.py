@@ -1,36 +1,33 @@
-import re
 import sys
 import pathlib
 import os
-from pprint import pprint
 
 import requests
-from urllib.request import urlopen
-from urllib.parse import urlencode, quote, urlparse
+from urllib.parse import quote, urlparse
 from bs4 import BeautifulSoup
 from datetime import datetime, timedelta
 
 
 today = datetime.now()
+offset = timedelta(days=5)
+today_offset = today-offset
+today_offset_ft = today_offset.strftime('%Y%m%d')
+date_compare = today_offset.strftime('%b %d, %Y')
 day_start = timedelta(seconds=today.timestamp()).days-5
 day_end = timedelta(seconds=today.timestamp()).days-5
 url = f'https://www.bing.com/search?q=Tesla&filters=ex1%3a%22ez5_{day_start}_{day_end}%22&qs=n&sp=-1&pq=tesla&sc=10-5&qpvt=Tesla'
 
-# parsed = urlparse(url)
+
+def create_url(scheme, netloc, path, query):
+    if query == '':
+        return f'{scheme}://{netloc}{path}'
+    else:
+        return f'{scheme}://{netloc}{path}?{query}'
 
 
-# def create_url(scheme, netloc, path, query):
-#     return f'{scheme}://{netloc}{path}?{query}'
+def create_url_from_parsed(parsed_url):
+    return create_url(parsed_url.scheme, parsed_url.netloc, parsed_url.path, quote(parsed_url.query, safe='=&'))
 
-# quoted_url = create_url(
-#     parsed.scheme,
-#     parsed.netloc,
-#     parsed.path,
-#     quote(parsed.query, safe='=&')
-# )
-
-# print(parsed.geturl())
-# print(quoted_url)
 
 print(f'URL: {url}')
 res = requests.get(url)
@@ -52,7 +49,7 @@ def li__b_algo(tag):
 
 
 def a_link_title(tag):
-    return tag.name == 'a' and tag.has_attr('h')
+    return tag.name == 'a' and tag.has_attr('h') and tag.parent.name == 'h2'
 
 
 def a_link_desc(tag):
@@ -68,11 +65,47 @@ soup_link_title_res = soup_link.find_all(a_link_title)
 soup_link_desc_res = soup_link.find_all(a_link_desc)
 
 
+def format_entry(string: str) -> str:
+    string = string.strip()
+
+    if string.endswith('…'):
+        string = string[:-1].strip()
+    if string.endswith('...'):
+        string = string[:-3].strip()
+    if string.endswith('-'):
+        string = string[:-1].strip()
+
+    return string
+
+
+def _format_title(string: str) -> str:
+    string = format_entry(string)
+    return string
+
+
+def _format_desc(string: str) -> str:
+    string = string[len(date_compare)+3:]
+    string = format_entry(string)
+    return string
+
+
+def _format_href(string: str) -> str:
+    string = urlparse(string)
+    string = create_url_from_parsed(string)
+    return string
+
+
+results = []
 for i in range(0, len(soup_link_title_res)):
     title = soup_link_title_res[i]
     desc = soup_link_desc_res[i]
 
-    _href = title.get('href')
-    _text = title.text
-    _desc = desc.text
-    print(f'{_text}\n\t{_desc}\nURL: {_href}\n\n')
+    _desc = f'{desc.text}'.strip()
+    if _desc.startswith(date_compare):
+        _desc = _format_desc(_desc)
+        _text = _format_title(title.text)
+        _href = _format_href(title.get('href'))
+        results.append(f'{today_offset_ft}|{_href}|{_text}|{_desc}')
+
+joined = '\n'.join(results)
+print(f'Items: {len(results)}\n\n{joined}')
