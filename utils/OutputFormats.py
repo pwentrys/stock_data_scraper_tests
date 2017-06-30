@@ -10,6 +10,11 @@ class OutputFormats:
 
     @staticmethod
     def entry(string: str) -> str:
+        """
+
+        :param string:
+        :return:
+        """
         string = string.strip()
 
         for begin in OutputFormats.BEGINS:
@@ -28,20 +33,42 @@ class OutputFormats:
 
     @staticmethod
     def title(string: str) -> str:
+        """
+
+        :param string:
+        :return:
+        """
         string = OutputFormats.entry(string)
         return string
 
     @staticmethod
     def description(string: str) -> str:
+        """
+
+        :param string:
+        :return:
+        """
         string = OutputFormats.entry(string)
         return string
 
     @staticmethod
     def link(string: str) -> str:
+        """
+
+        :param string:
+        :return:
+        """
         return URLFormats.from_string(string)
 
     @staticmethod
     def get_result(title: str, desc: str, link: str) -> Tuple[str, str, str]:
-        return OutputFormats.title(title),\
-               OutputFormats.description(desc),\
+        """
+
+        :param title:
+        :param desc:
+        :param link:
+        :return:
+        """
+        return OutputFormats.title(title), \
+               OutputFormats.description(desc), \
                OutputFormats.link(link)

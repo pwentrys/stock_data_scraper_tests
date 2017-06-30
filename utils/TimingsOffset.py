@@ -1,11 +1,16 @@
-from utils.DateTimeFormats import DTFormats
 from datetime import datetime, timedelta
+
+from utils.DateTimeFormats import DTFormats
 
 
 class TimingsOffset:
+    """
+
+    """
     TODAY = datetime.now()
 
     def __init__(self):
+        self.name = 'Tesla'
         self.today = TimingsOffset.TODAY
         self.int = 0
         self.td = self._update_timedelta()
@@ -19,9 +24,24 @@ class TimingsOffset:
         self.url = self._update_url()
 
     def _update_url(self) -> str:
-        return f'https://www.bing.com/search?q=Tesla&filters=ex1%3a%22ez5_{self.day_start}_{self.day_end}%22&qs=n&sp=-1&pq=tesla&sc=10-5&qpvt=Tesla'
+        name = self.name
+        start = self.day_start
+        end = self.day_end
+        return f'https://www.bing.com/search?' \
+               f'q={name}&' \
+               f'filters=ex1%3a%22ez5_{start}_{end}%22&' \
+               f'qs=n&' \
+               f'sp=-1&' \
+               f'pq={name.lower()}&' \
+               f'sc=10-5&' \
+               f'qpvt={name}'
 
     def url_with_first_offset(self, page: int):
+        """
+
+        :param page:
+        :return:
+        """
         if page == 0:
             self.url = self._update_url()
             return self.url
@@ -35,7 +55,8 @@ class TimingsOffset:
         return timedelta(seconds=self.ts).days
 
     def _update_days_ago(self) -> str:
-        return f'{self.int} days ago'
+        num = self.int
+        return f'{num} days ago'
 
     def _update_ts(self):
         return self.dt.timestamp()
@@ -53,6 +74,9 @@ class TimingsOffset:
         return timedelta(days=self.int)
 
     def update(self):
+        """
+
+        """
         self.td = self._update_timedelta()
         self.dt = self._update_datetime()
         self.ts = self._update_ts()

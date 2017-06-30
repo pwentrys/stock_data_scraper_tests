@@ -23,22 +23,40 @@ class Statics:
 
     @staticmethod
     def get_tsv_path(symbol: str):
-        return Statics._get_tsv_path('TSLA'), Statics._get_tsv_path('TSLA_PREV')
+        """
+
+        :param symbol:
+        :return:
+        """
+        return Statics._get_tsv_path(symbol), Statics._get_tsv_path(f'{symbol}_PREV')
 
     @staticmethod
     def ensure(directory):
+        """
+
+        :param directory:
+        """
         if not directory.is_dir():
             directory.mkdir()
 
     @staticmethod
     def ensure_work_dir():
+        """
+
+        """
         Statics.ensure(Statics.WORK_DIR)
 
     @staticmethod
     def ensure_data_dir():
+        """
+
+        """
         Statics.ensure(Statics.DATA_DIR)
 
     @staticmethod
     def ensure_dirs():
+        """
+
+        """
         Statics.ensure_work_dir()
         Statics.ensure_data_dir()

@@ -11,8 +11,19 @@ class URLFormats:
 
     @staticmethod
     def from_parsed(parsed_url) -> str:
-        return URLFormats._format(parsed_url.scheme, parsed_url.netloc, parsed_url.path, quote(parsed_url.query, safe='=&'))
+        """
+
+        :param parsed_url:
+        :return:
+        """
+        return URLFormats._format(parsed_url.scheme, parsed_url.netloc, parsed_url.path,
+                                  quote(parsed_url.query, safe='=&'))
 
     @staticmethod
     def from_string(string: str) -> str:
+        """
+
+        :param string:
+        :return:
+        """
         return URLFormats.from_parsed(urlparse(string))

@@ -3,6 +3,9 @@ from typing import Tuple
 
 
 class Timings:
+    """
+
+    """
     SLEEP_TIME = 2
     ESTIMATE_MULTI = 1.15
 

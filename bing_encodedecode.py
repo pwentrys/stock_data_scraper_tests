@@ -1,7 +1,8 @@
 import os
 import pathlib
-import requests
 import time
+
+import requests
 
 from utils.OutputFormats import OutputFormats
 from utils.SoupTags import SoupTags
@@ -17,6 +18,12 @@ tsver = TSVer('TSLA')
 
 
 def run(offset_start: int, offset_end: int, pages: int):
+    """
+    # TODO Split this apart.
+    :param offset_start:
+    :param offset_end:
+    :param pages:
+    """
     timer.estimate_duration(offset_end - offset_start, pages)
     timer.start_logged()
     current_runs = 0
@@ -70,6 +77,6 @@ def run(offset_start: int, offset_end: int, pages: int):
 
     timer.stop_logged()
 
+
 if __name__ == '__main__':
     run(0, 3, 3)
-
