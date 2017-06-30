@@ -20,7 +20,7 @@ class SoupTags:
         :param h_string:
         :return:
         """
-        return SoupTags._get_soup(text).find(href=re.compile(""), h=re.compile(h_string))
+        return SoupTags._get_soup(text).find(href=re.compile(''), h=re.compile(h_string))
 
     @staticmethod
     def using_type_and_id(text: str, type_string: str, id_string: str):

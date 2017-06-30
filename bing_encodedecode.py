@@ -17,6 +17,31 @@ timer = Timings()
 tsver = TSVer('TSLA')
 
 
+def _get_stripped_item(div):
+    try:
+        stripped = div.p.text.strip()
+    except Exception as error:
+        stripped = div
+        print(dir(stripped))
+        print(f'stripped: {stripped}\n{error}')
+    return stripped
+
+
+def run_item(string: str, stripped) -> bool:
+    try:
+        if stripped.startswith(timings_offset.bdy):
+            return True
+        else:
+            b_dt = SoupTags.using_type_and_class_one(string, 'span', 'news_dt')
+            if b_dt is not None:
+                dt = OutputFormats.entry(b_dt.text)
+                if dt == timings_offset.days_ago:
+                    return True
+    except Exception as error:
+        print(f'DIV: {stripped}\n{error}')
+    return False
+
+
 def run(offset_start: int, offset_end: int, pages: int):
     """
     # TODO Split this apart.
@@ -28,38 +53,27 @@ def run(offset_start: int, offset_end: int, pages: int):
     timer.start_logged()
     current_runs = 0
     counter_items = 0
+    sleep_time = timer.SLEEP_TIME
     final_results = []
     for i in range(offset_start, offset_end):
-        timings_offset.int = i
-        timings_offset.update()
+        timings_offset.update_num(i)
         for j in range(0, pages):
             current_runs += 1
             timer.operation_logged()
-            time.sleep(Statics.SLEEP_TIME)
+            time.sleep(sleep_time)
             res = requests.get(timings_offset.url_with_first_offset(j))
             text = res.text
 
-            requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
-            requests_html.write_text(text, encoding=Statics.UTF8)
+            # requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
+            # requests_html.write_text(text, encoding=Statics.UTF8)
 
             b_results = SoupTags.using_type_and_id(text, 'ol', 'b_results')
             b_algo = SoupTags.using_type_and_class(str(b_results), 'li', 'b_algo')
 
-            for _item in b_algo:
-                item = str(_item)
-                _continue = False
-                _desc = f'{_item.div.p.text}'.strip()
-                if _desc.startswith(timings_offset.bdy):
-                    _continue = True
-                else:
-                    b_dt = SoupTags.using_type_and_class_one(item, 'span', 'news_dt')
-                    if b_dt is not None:
-                        _dt = OutputFormats.entry(b_dt.text)
-                        if _dt == timings_offset.days_ago:
-                            _continue = True
-
-                if _continue:
-                    title = SoupTags.using_h_re_compile(item, 'ID=SERP,')
+            for item in b_algo:
+                _desc = _get_stripped_item(item)
+                if run_item(str(item), _desc):
+                    title = SoupTags.using_h_re_compile(str(item), 'ID=SERP,')
                     _text, _desc, _href = OutputFormats.get_result(
                         title.text,
                         _desc.replace(timings_offset.bdy, ''),
@@ -68,9 +82,9 @@ def run(offset_start: int, offset_end: int, pages: int):
                     final_results.append(f'{timings_offset.ymd}|{_href}|{_text}|{_desc}')
                     counter_items += 1
 
-        if counter_items > 10:
-            counter_items = 0
+        if counter_items > 50:
             tsver.append_current(final_results)
+            counter_items = 0
 
     if len(final_results) > 0:
         tsver.append_current(final_results)
@@ -79,4 +93,4 @@ def run(offset_start: int, offset_end: int, pages: int):
 
 
 if __name__ == '__main__':
-    run(0, 3, 3)
+    run(0, 5, 3)

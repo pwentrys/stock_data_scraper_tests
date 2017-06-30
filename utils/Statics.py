@@ -7,7 +7,7 @@ from sys import path as syspath
 
 class Statics:
     EMPTY = f''
-    PARSER = 'html5lib'
+    PARSER = 'lxml-xml'  # html5lib
     UTF8 = 'utf-8'
     SYSPATH = syspath[0]
     HTMLS = 'htmls'
@@ -15,7 +15,6 @@ class Statics:
     WORK_DIR = Path(join(SYSPATH, HTMLS))
     DATA_DIR = Path(join(SYSPATH, DATA))
     TODAY = datetime.now()
-    SLEEP_TIME = 2
 
     @staticmethod
     def _get_tsv_path(symbol: str):

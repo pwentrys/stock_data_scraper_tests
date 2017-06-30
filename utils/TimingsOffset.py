@@ -12,7 +12,7 @@ class TimingsOffset:
     def __init__(self):
         self.name = 'Tesla'
         self.today = TimingsOffset.TODAY
-        self.int = 0
+        self.num = 0
         self.td = self._update_timedelta()
         self.dt = self._update_datetime()
         self.ts = self._update_ts()
@@ -36,7 +36,7 @@ class TimingsOffset:
                f'sc=10-5&' \
                f'qpvt={name}'
 
-    def url_with_first_offset(self, page: int):
+    def url_with_first_offset(self, page: int) -> str:
         """
 
         :param page:
@@ -45,8 +45,14 @@ class TimingsOffset:
         if page == 0:
             self.url = self._update_url()
             return self.url
-        else:
-            return f'{self.url}&first={(page*10)+1}'
+
+        offset = (page * 10) + 1
+
+        if offset > 1:
+            return f'{self.url}&first={offset}'
+
+        self.url = self._update_url()
+        return self.url
 
     def _update_day_start(self) -> int:
         return timedelta(seconds=self.ts).days
@@ -55,7 +61,7 @@ class TimingsOffset:
         return timedelta(seconds=self.ts).days
 
     def _update_days_ago(self) -> str:
-        num = self.int
+        num = self.num
         return f'{num} days ago'
 
     def _update_ts(self):
@@ -71,7 +77,12 @@ class TimingsOffset:
         return self.today - self.td
 
     def _update_timedelta(self) -> timedelta:
-        return timedelta(days=self.int)
+        return timedelta(days=self.num)
+
+    def update_num(self, num: int):
+        if self.num != num:
+            self.num = num
+            self.update()
 
     def update(self):
         """

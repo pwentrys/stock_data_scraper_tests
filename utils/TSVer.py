@@ -6,12 +6,12 @@ class TSVer:
 
     """
 
-    def __init__(self, symbol):
+    def __init__(self, symbol: str):
         self.symbol = symbol
         self.current, self.previous = Statics.get_tsv_path(symbol)
         self._move_current_to_previous()
 
-    def update_symbol(self, symbol):
+    def update_symbol(self, symbol: str):
         """
 
         :param symbol:
