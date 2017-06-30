@@ -65,7 +65,6 @@ class TimingsOffset:
         else:
             return f'{self.url}&first={(page*10)+1}'
 
-
     def _update_day_start(self) -> int:
         return timedelta(seconds=self.ts).days
 
