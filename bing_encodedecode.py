@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 
 
 today = datetime.now()
+
 offset_int = 5
 offset = timedelta(days=offset_int)
 today_offset = today-offset
@@ -20,30 +21,45 @@ day_end = timedelta(seconds=today.timestamp()).days-offset_int
 url = f'https://www.bing.com/search?q=Tesla&filters=ex1%3a%22ez5_{day_start}_{day_end}%22&qs=n&sp=-1&pq=tesla&sc=10-5&qpvt=Tesla'
 
 
-def create_url(scheme, netloc, path, query):
-    if query == '':
-        return f'{scheme}://{netloc}{path}'
-    else:
-        return f'{scheme}://{netloc}{path}?{query}'
+class URLFormat:
+    @staticmethod
+    def _format(scheme, netloc, path, query):
+        if query == '':
+            return f'{scheme}://{netloc}{path}'
+        else:
+            return f'{scheme}://{netloc}{path}?{query}'
+
+    @staticmethod
+    def from_parsed(parsed_url) -> str:
+        return URLFormat._format(parsed_url.scheme, parsed_url.netloc, parsed_url.path, quote(parsed_url.query, safe='=&'))
+
+    @staticmethod
+    def from_string(string: str) -> str:
+        return URLFormat.from_parsed(urlparse(string))
 
 
-def create_url_from_parsed(parsed_url):
-    return create_url(parsed_url.scheme, parsed_url.netloc, parsed_url.path, quote(parsed_url.query, safe='=&'))
+class Statics:
+    PARSER = 'html5lib'
+    UTF8 = 'utf-8'
+    SYSPATH = sys.path[0]
+    HTMLS = 'htmls'
+    WORK_DIR = pathlib.Path(os.path.join(SYSPATH, HTMLS))
 
+    @staticmethod
+    def ensure_work_dir():
+        if not Statics.WORK_DIR.is_dir():
+            Statics.WORK_DIR.mkdir()
 
-print(f'URL: {url}')
+Statics.ensure_work_dir()
+
 res = requests.get(url)
 txt = res.text
-work_dir = pathlib.Path(os.path.join(sys.path[0], 'htmls'))
-if not work_dir.is_dir():
-    work_dir.mkdir()
 
-requests_html = pathlib.Path(os.path.join(work_dir, 'requests_bing.html'))
-requests_html.write_text(txt, encoding='utf-8')
+requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
+requests_html.write_text(txt, encoding=Statics.UTF8)
 
 
-parser_string = 'html5lib'
-soup_b_results = BeautifulSoup(txt, parser_string)
+soup_b_results = BeautifulSoup(txt, Statics.PARSER)
 b_results = soup_b_results.find(id='b_results')
 
 
@@ -67,46 +83,52 @@ class TagExtract:
 
 # 'html.parser'
 # Each entry is in an LI class called 'b_algo'
-soup_li__b_algo = BeautifulSoup(str(b_results), parser_string)
+soup_li__b_algo = BeautifulSoup(str(b_results), Statics.PARSER)
 soupr_algo = soup_li__b_algo.find_all(TagExtract.li__b_algo)
 
 
-soup_link = BeautifulSoup(str(soupr_algo), parser_string)
+soup_link = BeautifulSoup(str(soupr_algo), Statics.PARSER)
 soupr_t = soup_link.find_all(TagExtract.a_link_title)
 soupr_d = soup_link.find_all(TagExtract.a_link_desc)
-#  soupr_dt = soup_link.find_all(TagExtract.a_link_news_dt)
 
 
-_format_entries_list = ['…', '...', '-']
+class OutputFormat:
+    BEGINS = []
+    CONTAINS = ['|']
+    ENDS = ['…', '...', '-']
 
+    @staticmethod
+    def entry(string: str) -> str:
+        string = string.strip()
 
-def _format_entry(string: str) -> str:
-    string = string.strip()
+        for begin in OutputFormat.BEGINS:
+            if string.startswith(begin):
+                string = string[len(begin):].strip()
 
-    for item in _format_entries_list:
-        if string.endswith(item):
-            string = string[:-len(item)].strip()
-    if string.__contains__('|'):
-        string = string.replace('|', '').strip()
+        for end in OutputFormat.ENDS:
+            if string.endswith(end):
+                string = string[:-len(end)].strip()
 
-    return string
+        for contain in OutputFormat.CONTAINS:
+            if string.__contains__(contain):
+                string = string.replace(contain, '').strip()
 
+        return string
 
-def _format_title(string: str) -> str:
-    string = _format_entry(string)
-    return string
+    @staticmethod
+    def title(string: str) -> str:
+        string = OutputFormat.entry(string)
+        return string
 
+    @staticmethod
+    def description(string: str) -> str:
+        string = string[len(date_compare)+3:]
+        string = OutputFormat.entry(string)
+        return string
 
-def _format_desc(string: str) -> str:
-    string = string[len(date_compare)+3:]
-    string = _format_entry(string)
-    return string
-
-
-def _format_href(string: str) -> str:
-    string = urlparse(string)
-    string = create_url_from_parsed(string)
-    return string
+    @staticmethod
+    def link(string: str) -> str:
+        return URLFormat.from_string(string)
 
 
 results = []
@@ -119,17 +141,17 @@ for i in range(0, len(soupr_t)):
     if _desc.startswith(date_compare):
         _continue = True
     else:
-        soup_dt = BeautifulSoup(str(title.parent.parent), parser_string)
+        soup_dt = BeautifulSoup(str(title.parent.parent), Statics.PARSER)
         dt = soup_dt.find_all(TagExtract.a_link_news_dt)
         if len(dt) > 0:
-            _dt = _format_entry(dt[0].text)
+            _dt = OutputFormat.entry(dt[0].text)
             if _dt == days_ago_compare:
                 _continue = True
 
     if _continue:
-        _desc = _format_desc(_desc)
-        _text = _format_title(title.text)
-        _href = _format_href(title.get('href'))
+        _desc = OutputFormat.description(_desc)
+        _text = OutputFormat.title(title.text)
+        _href = OutputFormat.link(title.get('href'))
         results.append(f'{today_offset_ft}|{_href}|{_text}|{_desc}')
 
 joined = '\n'.join(results)
