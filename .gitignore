@@ -1,0 +1,32 @@
+# unity/
+# Byte-compiled / optimized / DLL files
+*configuration.py
+*credentials.py
+# C extensions
+# Distribution / packaging
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+# Installer logs
+# Unit test / coverage reports
+# Translations
+# Django stuff:
+#*.log
+# Flask stuff:
+# Scrapy stuff:
+# Sphinx documentation
+# PyBuilder
+# IPython Notebook
+# pyenv
+# celery beat schedule file
+# dotenv
+# virtualenv
+# Spyder project settings
+# Rope project settings
+.idea/
+archivist/archivist/run.py
+archivist/archivist/run_sql_to_table_generator.py
+programmer/programmer/ins*
+programmer/programmer/outs*
+programmer/programmer/plugins*
+*test*

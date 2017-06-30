@@ -1,0 +1,20 @@
+beautifulsoup4>=4.6.0
+# bottleneck>=1.2.1
+# mkl
+# mkl-service
+# nltk
+# numpy
+# numpydoc
+lxml>=3.8.0
+packaging
+# pandas
+# path.py
+# pathlib2
+# py
+requests
+# scikit-image
+# scikit-learn
+# scipy
+# setuptools>=36.0.1
+# six
+# vulkan
