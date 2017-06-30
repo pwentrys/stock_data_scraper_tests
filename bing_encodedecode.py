@@ -18,7 +18,7 @@ class Statics:
     WORK_DIR = pathlib.Path(os.path.join(SYSPATH, HTMLS))
     DATA_DIR = pathlib.Path(os.path.join(SYSPATH, DATA))
     TODAY = datetime.now()
-    SLEEP_TIME = 2
+    SLEEP_TIME = 5
 
     @staticmethod
     def ensure_work_dir():
@@ -176,11 +176,21 @@ class OutputFormat:
     def link(string: str) -> str:
         return URLFormat.from_string(string)
 
-start_time = datetime.now()
+class Timings:
+    START = datetime.now()
+    END_EST_SECS = 0
+    END_EST = datetime.now()
+    END_REAL = datetime.now()
 
+
+Timings.START = datetime.now()
 
 def run(offset_start: int, offset_end: int, pages: int):
     total_runs = ((offset_end - offset_start) * pages)
+    print(f'Start Time: {Timings.START}')
+    Timings.END_EST_SECS = total_runs * (Statics.SLEEP_TIME * 1.125)
+    Timings.END_EST = Timings.START + timedelta(seconds=Timings.END_EST_SECS)
+    print(f'Finish Est: {Timings.END_EST}   -   ({Timings.END_EST - Timings.START})')
     current_runs = 0
     final_results = []
     for i in range(offset_start, offset_end):
@@ -189,7 +199,7 @@ def run(offset_start: int, offset_end: int, pages: int):
         # results = []
         for j in range(0, pages):
             current_runs += 1
-            print(f'Starting {current_runs} / {total_runs}   -   ({datetime.now() - start_time}).')
+            print(f'Starting {current_runs} / {total_runs}   -   ({datetime.now() - Timings.START}).')
             time.sleep(Statics.SLEEP_TIME)
             res = requests.get(timings.url_with_first_offset(j))
             txt = res.text
@@ -236,13 +246,19 @@ def run(offset_start: int, offset_end: int, pages: int):
     return '\n'.join(set(final_results))
 
 if __name__ == '__main__':
-    text = run(0, 2, 3)
+    text = run(0, 5, 3)
     tsv_path = pathlib.Path(os.path.join(f'{Statics.DATA_DIR}', 'TSLA.tsv'))
     if not tsv_path.is_file():
         tsv_path.write_text('', encoding=Statics.UTF8)
     cur_text = tsv_path.read_text(encoding=Statics.UTF8)
     if text != cur_text:
         tsv_path.write_text(text, encoding=Statics.UTF8)
-    end_time = datetime.now()
-    print(f'Total Run: {end_time-start_time}')
+    Timings.END_REAL = datetime.now()
+    print(f'Finished At: {Timings.END_REAL}')
+    print(f'Original Est: {Timings.END_EST}')
+    if Timings.END_REAL > Timings.END_EST:
+        print(f'UNDERESTIMATED BY {Timings.END_REAL - Timings.END_EST}')
+    else:
+        print(f'OVERESTIMATED BY {Timings.END_EST - Timings.END_REAL}')
+    print(f'Total Run: {Timings.END_REAL - Timings.START}')
 
