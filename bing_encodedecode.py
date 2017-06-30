@@ -18,7 +18,7 @@ class Statics:
     WORK_DIR = pathlib.Path(os.path.join(SYSPATH, HTMLS))
     DATA_DIR = pathlib.Path(os.path.join(SYSPATH, DATA))
     TODAY = datetime.now()
-    SLEEP_TIME = 5
+    SLEEP_TIME = 7
 
     @staticmethod
     def ensure_work_dir():
@@ -213,7 +213,7 @@ def run(offset_start: int, offset_end: int, pages: int):
     current_runs = 0
     final_results = []
     for i in range(offset_start, offset_end):
-        if len(final_results) > 100:
+        if len(final_results) > 1000:
             do_update_file_write(final_results)
             final_results.clear()
             if len(final_results) > 0:
@@ -268,7 +268,7 @@ def run(offset_start: int, offset_end: int, pages: int):
     do_update_file_write(final_results)
 
 if __name__ == '__main__':
-    run(0, 5, 2)
+    run(0, 3000, 2)
     # cur_text = tsv_path.read_text(encoding=Statics.UTF8)
     # if text != cur_text:
     # tsv_path.write_text(text, encoding=Statics.UTF8)
