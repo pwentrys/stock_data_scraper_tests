@@ -22,8 +22,9 @@ def _get_stripped_item(div):
         stripped = div.p.text.strip()
     except Exception as error:
         stripped = div
-        print(dir(stripped))
-        print(f'stripped: {stripped}\n{error}')
+        print(error)
+        # print(dir(stripped))
+        # print(f'stripped: {stripped}\n{error}')
     return stripped
 
 
@@ -38,7 +39,7 @@ def run_item(string: str, stripped) -> bool:
                 if dt == timings_offset.days_ago:
                     return True
     except Exception as error:
-        print(f'DIV: {stripped}\n{error}')
+        print(f'{error}')
     return False
 
 
@@ -72,15 +73,19 @@ def run(offset_start: int, offset_end: int, pages: int):
 
             for item in b_algo:
                 _desc = _get_stripped_item(item)
-                if run_item(str(item), _desc):
-                    title = SoupTags.using_h_re_compile(str(item), 'ID=SERP,')
-                    _text, _desc, _href = OutputFormats.get_result(
-                        title.text,
-                        _desc.replace(timings_offset.bdy, ''),
-                        title.get('href')
-                    )
-                    final_results.append(f'{timings_offset.ymd}|{_href}|{_text}|{_desc}')
-                    counter_items += 1
+                item_str = str(item)
+                if run_item(item_str, _desc):
+                    try:
+                        title = SoupTags.using_h_re_compile(item_str, 'ID=SERP,')
+                        _text, _desc, _href = OutputFormats.get_result(
+                            title.text,
+                            _desc.replace(timings_offset.bdy, ''),
+                            title.get('href')
+                        )
+                        final_results.append(f'{timings_offset.ymd}|{_href}|{_text}|{_desc}')
+                        counter_items += 1
+                    except Exception as error:
+                        print(error)
 
         if counter_items > 50:
             tsver.append_current(final_results)
@@ -93,4 +98,4 @@ def run(offset_start: int, offset_end: int, pages: int):
 
 
 if __name__ == '__main__':
-    run(0, 5, 3)
+    run(0, 3000, 3)
