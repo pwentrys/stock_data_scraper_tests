@@ -1,5 +1,6 @@
 beautifulsoup4>=4.6.0
 # bottleneck>=1.2.1
+html5lib
 # mkl
 # mkl-service
 # nltk
