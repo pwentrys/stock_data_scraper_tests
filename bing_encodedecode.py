@@ -18,7 +18,7 @@ class Statics:
     WORK_DIR = pathlib.Path(os.path.join(SYSPATH, HTMLS))
     DATA_DIR = pathlib.Path(os.path.join(SYSPATH, DATA))
     TODAY = datetime.now()
-    SLEEP_TIME = 5
+    SLEEP_TIME = 2
 
     @staticmethod
     def ensure_work_dir():
@@ -57,6 +57,14 @@ class TimingsOffset:
 
     def _update_url(self) -> str:
         return f'https://www.bing.com/search?q=Tesla&filters=ex1%3a%22ez5_{self.day_start}_{self.day_end}%22&qs=n&sp=-1&pq=tesla&sc=10-5&qpvt=Tesla'
+
+    def url_with_first_offset(self, page: int):
+        if page == 0:
+            self.url = self._update_url()
+            return self.url
+        else:
+            return f'{self.url}&first={(page*10)+1}'
+
 
     def _update_day_start(self) -> int:
         return timedelta(seconds=self.ts).days
@@ -169,64 +177,73 @@ class OutputFormat:
     def link(string: str) -> str:
         return URLFormat.from_string(string)
 
+start_time = datetime.now()
 
-def run(offset_start: int, offset_end: int):
+
+def run(offset_start: int, offset_end: int, pages: int):
+    total_runs = ((offset_end - offset_start) * pages)
+    current_runs = 0
     final_results = []
     for i in range(offset_start, offset_end):
-        time.sleep(Statics.SLEEP_TIME)
         timings.int = i
         timings.update()
-        res = requests.get(timings.url)
-        txt = res.text
+        # results = []
+        for j in range(0, pages):
+            current_runs += 1
+            print(f'Starting {current_runs} / {total_runs}   -   ({datetime.now() - start_time}).')
+            time.sleep(Statics.SLEEP_TIME)
+            res = requests.get(timings.url_with_first_offset(j))
+            txt = res.text
 
-        requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
-        requests_html.write_text(txt, encoding=Statics.UTF8)
+            requests_html = pathlib.Path(os.path.join(Statics.WORK_DIR, 'requests_bing.html'))
+            requests_html.write_text(txt, encoding=Statics.UTF8)
 
-        soup_b_results = BeautifulSoup(txt, Statics.PARSER)
-        b_results = soup_b_results.find(id='b_results')
+            soup_b_results = BeautifulSoup(txt, Statics.PARSER)
+            b_results = soup_b_results.find(id='b_results')
 
-        # 'html.parser'
-        # Each entry is in an LI class called 'b_algo'
-        soup_li__b_algo = BeautifulSoup(str(b_results), Statics.PARSER)
-        soupr_algo = soup_li__b_algo.find_all(TagExtract.li__b_algo)
+            # 'html.parser'
+            # Each entry is in an LI class called 'b_algo'
+            soup_li__b_algo = BeautifulSoup(str(b_results), Statics.PARSER)
+            soupr_algo = soup_li__b_algo.find_all(TagExtract.li__b_algo)
 
-        soup_link = BeautifulSoup(str(soupr_algo), Statics.PARSER)
-        soupr_t = soup_link.find_all(TagExtract.a_link_title)
-        soupr_d = soup_link.find_all(TagExtract.a_link_desc)
+            soup_link = BeautifulSoup(str(soupr_algo), Statics.PARSER)
+            soupr_t = soup_link.find_all(TagExtract.a_link_title)
+            soupr_d = soup_link.find_all(TagExtract.a_link_desc)
 
-        results = []
-        for i in range(0, len(soupr_t)):
-            _continue = False
-            title = soupr_t[i]
-            desc = soupr_d[i]
+            for i in range(0, len(soupr_t)):
+                _continue = False
+                title = soupr_t[i]
+                desc = soupr_d[i]
 
-            _desc = f'{desc.text}'.strip()
-            if _desc.startswith(timings.bdy):
-                _continue = True
-            else:
-                soup_dt = BeautifulSoup(str(title.parent.parent), Statics.PARSER)
-                dt = soup_dt.find_all(TagExtract.a_link_news_dt)
-                if len(dt) > 0:
-                    _dt = OutputFormat.entry(dt[0].text)
-                    if _dt == timings.days_ago:
-                        _continue = True
+                _desc = f'{desc.text}'.strip()
+                if _desc.startswith(timings.bdy):
+                    _continue = True
+                else:
+                    soup_dt = BeautifulSoup(str(title.parent.parent), Statics.PARSER)
+                    dt = soup_dt.find_all(TagExtract.a_link_news_dt)
+                    if len(dt) > 0:
+                        _dt = OutputFormat.entry(dt[0].text)
+                        if _dt == timings.days_ago:
+                            _continue = True
 
-            if _continue:
-                _desc = OutputFormat.description(_desc)
-                _text = OutputFormat.title(title.text)
-                _href = OutputFormat.link(title.get('href'))
-                results.append(f'{timings.ymd}|{_href}|{_text}|{_desc}')
+                if _continue:
+                    _desc = OutputFormat.description(_desc)
+                    _text = OutputFormat.title(title.text)
+                    _href = OutputFormat.link(title.get('href'))
+                    final_results.append(f'{timings.ymd}|{_href}|{_text}|{_desc}')
 
-        final_results.append('\n'.join(results))
+        # final_results.append('\n'.join(results))
         # print(f'Items: {len(results)}\n\n{joined}')
-    return ''.join(final_results)
+    return '\n'.join(set(final_results))
 
 if __name__ == '__main__':
-    text = run(0, 5)
+    text = run(0, 2, 3)
     tsv_path = pathlib.Path(os.path.join(f'{Statics.DATA_DIR}', 'TSLA.tsv'))
     if not tsv_path.is_file():
         tsv_path.write_text('', encoding=Statics.UTF8)
     cur_text = tsv_path.read_text(encoding=Statics.UTF8)
     if text != cur_text:
         tsv_path.write_text(text, encoding=Statics.UTF8)
+    end_time = datetime.now()
+    print(f'Total Run: {end_time-start_time}')
 
