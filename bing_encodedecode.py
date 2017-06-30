@@ -188,7 +188,7 @@ Timings.START = datetime.now()
 def run(offset_start: int, offset_end: int, pages: int):
     total_runs = ((offset_end - offset_start) * pages)
     print(f'Start Time: {Timings.START}')
-    Timings.END_EST_SECS = total_runs * (Statics.SLEEP_TIME * 1.125)
+    Timings.END_EST_SECS = total_runs * (Statics.SLEEP_TIME * 1.15)
     Timings.END_EST = Timings.START + timedelta(seconds=Timings.END_EST_SECS)
     print(f'Finish Est: {Timings.END_EST}   -   ({Timings.END_EST - Timings.START})')
     current_runs = 0
