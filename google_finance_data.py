@@ -7,24 +7,21 @@ from datetime import datetime, timedelta
 
 
 today = datetime.now()
-day = str(today.day)
-if day[0] == '0':
-    day = day[1:]
 month = today.strftime('%b')
-year = str(today.year)
-today_formatted = f'{month}+{day}%2C+{year}'
+today_formatted = f'{month}+{int(today.day)}%2C+{today.year}'
 
 cids = {
     'TSLA': 12607212,
-    'IRBT': 701970
+    'IRBT': 701970,
+    'NVDA': 662925
 }
 
 output_format = 'csv'
-active_stock = 'IRBT'  # 'TSLA'
+active_stock = 'NVDA'  # 'TSLA'
 
 
 def get_historical_url():
-    return f'http://www.google.com/finance/historical?cid={cids[active_stock]}&startdate=Jan+1%2C+1980&enddate={today_formatted}&output={output_format}'
+    return f'http://www.google.com/finance/historical?cid={cids[active_stock]}&startdate=Jan+1%2C+1970&enddate={today_formatted}&output={output_format}'
 
 
 def get_historical_csv():
@@ -38,7 +35,7 @@ text = get_historical_csv()
 data_split = text.splitlines()
 headers = data_split[0]
 texts = data_split[1:-1]
-new_texts = [f'{headers}\n']
+new_texts = []
 for line in texts:
     line_split = line.split(',')
     date = line_split[0]
@@ -57,8 +54,10 @@ for line in texts:
     line_split[0] = date_yyyymmdd
     line_split = [f'{item},' for item in line_split]
     line_split[len(line_split)-1] = line_split[len(line_split)-1][:-1]
-    new_texts.append(f"{''.join(line_split)}\n")
-new_text = ''.join(new_texts)
+    joined_split = ''.join(line_split)
+    new_texts.append(f"{joined_split}")
+new_text = '\n'.join(sorted(set(new_texts)))
+new_text = f'{headers}\n{new_text}'
 path = pathlib.Path(sys.path[0])
 path_data = pathlib.Path(os.path.join(path, 'data'))
 if not path_data.is_dir():
