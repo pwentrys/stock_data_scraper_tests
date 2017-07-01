@@ -21,7 +21,7 @@ data = {
     # 'days': 5000
     'name': 'Nvidia',
     'symbol': 'NVDA',
-    'days': 662925
+    'days': 6756
 }
 
 Statics.ensure_dirs()
