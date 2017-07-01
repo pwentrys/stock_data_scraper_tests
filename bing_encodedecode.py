@@ -11,10 +11,23 @@ from utils.TSVer import TSVer
 from utils.Timings import Timings
 from utils.TimingsOffset import TimingsOffset
 
+
+data = {
+    # 'name': 'Tesla',
+    # 'symbol': 'TSLA',
+    # 'days': 3000
+    # 'name': 'iRobot',
+    # 'symbol': 'IRBT',
+    # 'days': 5000
+    'name': 'Nvidia',
+    'symbol': 'NVDA',
+    'days': 662925
+}
+
 Statics.ensure_dirs()
-timings_offset = TimingsOffset()
+timings_offset = TimingsOffset(data['name'])
 timer = Timings()
-tsver = TSVer('TSLA')
+tsver = TSVer(data['symbol'])
 
 
 def _get_stripped_item(div):
@@ -98,4 +111,4 @@ def run(offset_start: int, offset_end: int, pages: int):
 
 
 if __name__ == '__main__':
-    run(0, 3000, 3)
+    run(0, data['days'], 3)

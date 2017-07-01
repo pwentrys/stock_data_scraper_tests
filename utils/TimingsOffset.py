@@ -9,8 +9,8 @@ class TimingsOffset:
     """
     TODAY = datetime.now()
 
-    def __init__(self):
-        self.name = 'Tesla'
+    def __init__(self, name: str):
+        self.name = name
         self.today = TimingsOffset.TODAY
         self.num = 0
         self.td = self._update_timedelta()

@@ -3,7 +3,7 @@ beautifulsoup4>=4.6.0
 html5lib
 # mkl
 # mkl-service
-# nltk
+nltk
 # numpy
 # numpydoc
 lxml>=3.8.0
