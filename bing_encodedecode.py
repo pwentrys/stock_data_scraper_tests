@@ -10,22 +10,41 @@ from utils.TimingsOffset import TimingsOffset
 
 
 data = {
-    # 'name': 'Tesla',
-    # 'symbol': 'TSLA',
-    # 'days': 3000
-    # 'name': 'iRobot',
-    # 'symbol': 'IRBT',
-    # 'days': 5000
-    # 'name': 'Nvidia',
-    # 'symbol': 'NVDA',
-    # 'days': 6756
-    'name': 'Microsoft',
-    'symbol': 'MSFT',
-    'days': 6756
+    'AMD': {
+        'symbol': 'AMD',
+        'days': 14428
+    },
+    'Apple': {
+        'symbol': 'AAPL',
+        'days': 6756
+    },
+    'iRobot': {
+        'symbol': 'IRBT',
+        'days': 5000
+    },
+    'Microsoft': {
+        'symbol': 'MSFT',
+        'days': 6756
+    },
+    'Nvidia': {
+        'symbol': '6756',
+        'days': 6756
+    },
+    'SpaceX': {
+        'symbol': 'SPACEX',
+        'days': 3000
+    },
+    'Tesla': {
+        'symbol': 'TSLA',
+        'days': 3000
+    },
+    'active': 'Apple'
 }
 
+active = data['active']
+data = data[active]
 Statics.ensure_dirs()
-timings_offset = TimingsOffset(data['name'])
+timings_offset = TimingsOffset(active)
 timer = Timings()
 tsver = TSVer(data['symbol'])
 

@@ -3,7 +3,7 @@ import pathlib
 import requests
 import sys
 from bs4 import BeautifulSoup
-from datetime import datetime, timedelta
+from datetime import datetime
 
 
 today = datetime.now()
@@ -11,14 +11,31 @@ month = today.strftime('%b')
 today_formatted = f'{month}+{int(today.day)}%2C+{today.year}'
 
 cids = {
-    'TSLA': 12607212,
+    'AAPL': 22144,
+    'ABIO': 660731,
+    'AMD': 327,
+    'APTS': 10691360,
+    'CC': 681339,
+    'CSCO': 99624,
+    'DD': 10261,
+    'DOW': 983582,
+    'FITX': 729731,
+    'GE': 14135,
+    'GORV': 38213,
     'IRBT': 701970,
+    'IRT': 236803873679290,
+    'JNJ': 666601,
+    'MSFT': 358464,
     'NVDA': 662925,
-    'MSFT': 358464
+    'TSLA': 12607212,
+    'UTG': 696997,
+    'VOIL': 15405086,
+    'WPRT': 729542,
+    'WSTI': 1115179957885739,
 }
 
 output_format = 'csv'
-active_stock = 'MSFT'  # 'TSLA'
+active_stock = 'WSTI'  # 'TSLA'
 
 
 def get_historical_url():
