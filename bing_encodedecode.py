@@ -1,8 +1,5 @@
-import os
-import pathlib
-import time
-
 import requests
+import time
 
 from utils.OutputFormats import OutputFormats
 from utils.SoupTags import SoupTags
@@ -19,8 +16,11 @@ data = {
     # 'name': 'iRobot',
     # 'symbol': 'IRBT',
     # 'days': 5000
-    'name': 'Nvidia',
-    'symbol': 'NVDA',
+    # 'name': 'Nvidia',
+    # 'symbol': 'NVDA',
+    # 'days': 6756
+    'name': 'Microsoft',
+    'symbol': 'MSFT',
     'days': 6756
 }
 
