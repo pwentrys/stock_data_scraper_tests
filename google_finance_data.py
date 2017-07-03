@@ -13,11 +13,12 @@ today_formatted = f'{month}+{int(today.day)}%2C+{today.year}'
 cids = {
     'TSLA': 12607212,
     'IRBT': 701970,
-    'NVDA': 662925
+    'NVDA': 662925,
+    'MSFT': 358464
 }
 
 output_format = 'csv'
-active_stock = 'NVDA'  # 'TSLA'
+active_stock = 'MSFT'  # 'TSLA'
 
 
 def get_historical_url():
