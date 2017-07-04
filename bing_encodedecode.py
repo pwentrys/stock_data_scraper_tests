@@ -1,3 +1,5 @@
+import os
+import pathlib
 import requests
 import time
 
@@ -9,44 +11,100 @@ from utils.Timings import Timings
 from utils.TimingsOffset import TimingsOffset
 
 
-data = {
+datas = {
+    'Arca_Biopharma': {
+        'symbol': 'ABIO',
+        'days': 3105,
+        'pages': 1
+    },
     'AMD': {
         'symbol': 'AMD',
-        'days': 14428
+        'days': 14428,
+        'pages': 3
     },
     'Apple': {
         'symbol': 'AAPL',
-        'days': 6756
+        'days': 6756,
+        'pages': 3
+    },
+    'Preferred_Apartment_Communities': {
+        'symbol': 'APTS',
+        'days': 2375,
+        'pages': 1
+    },
+    'Cisco_Systems': {
+        'symbol': 'CSCO',
+        'days': 10045,
+        'pages': 3
+    },
+    'Dow_Chemical_Co': {
+        'symbol': 'DOW',
+        'days': 14428,
+        'pages': 1
+    },
+    'Creative_Edge_Nutrition_Inc': {
+        'symbol': 'FITX',
+        'days': 2740,
+        'pages': 1
+    },
+    'General_Electric_Company': {
+        'symbol': 'GE',
+        'days': 14428,
+        'pages': 3
+    },
+    'Golden_River_Resources_Corporation': {
+        'symbol': 'GORV',
+        'days': 2740,
+        'pages': 1
+    },
+    'Johnson_and_Johnson': {
+        'symbol': 'JNJ',
+        'days': 14428,
+        'pages': 1
     },
     'iRobot': {
         'symbol': 'IRBT',
-        'days': 5000
+        'days': 5000,
+        'pages': 3
     },
     'Microsoft': {
         'symbol': 'MSFT',
-        'days': 6756
+        'days': 6756,
+        'pages': 3
     },
     'Nvidia': {
-        'symbol': '6756',
-        'days': 6756
+        'symbol': 'NVDA',
+        'days': 6756,
+        'pages': 3
+    },
+    'Reaves_Utility_Income_Fund': {
+        'symbol': 'UTG',
+        'days': 4932,
+        'pages': 1
     },
     'SpaceX': {
         'symbol': 'SPACEX',
-        'days': 3000
+        'days': 3000,
+        'pages': 3
     },
     'Tesla': {
         'symbol': 'TSLA',
-        'days': 3000
+        'days': 3000,
+        'pages': 3
     },
-    'active': 'Apple'
+    'Virtus_Oil_and_Gas_Corp': {
+        'symbol': 'VOIL',
+        'days': 1644,
+        'pages': 1
+    },
+    'Westport_Fuel_Systems_Inc': {
+        'symbol': 'WPRT',
+        'days': 1644,
+        'pages': 1
+    },
 }
 
-active = data['active']
-data = data[active]
 Statics.ensure_dirs()
-timings_offset = TimingsOffset(active)
-timer = Timings()
-tsver = TSVer(data['symbol'])
 
 
 def _get_stripped_item(div):
@@ -75,13 +133,16 @@ def run_item(string: str, stripped) -> bool:
     return False
 
 
-def run(offset_start: int, offset_end: int, pages: int):
+def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
     """
     # TODO Split this apart.
     :param offset_start:
     :param offset_end:
     :param pages:
     """
+    timer = Timings()
+    tsver = TSVer(symbol)
+    timings_offset = TimingsOffset(stock_name)
     timer.estimate_duration(offset_end - offset_start, pages)
     timer.start_logged()
     current_runs = 0
@@ -129,5 +190,13 @@ def run(offset_start: int, offset_end: int, pages: int):
     timer.stop_logged()
 
 
+def run():
+    for key in datas:
+        data = datas[key]
+        path = pathlib.Path(os.path.join(Statics.DATA_DIR, f'{data["name"]}.tsv'))
+        if not path.is_file():
+            _run(0, data['days'], data['pages'], data['symbol'], key)
+
+
 if __name__ == '__main__':
-    run(0, data['days'], 3)
+    run()

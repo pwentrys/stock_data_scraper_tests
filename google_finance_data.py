@@ -9,6 +9,7 @@ from datetime import datetime
 today = datetime.now()
 month = today.strftime('%b')
 today_formatted = f'{month}+{int(today.day)}%2C+{today.year}'
+output_format = 'csv'
 
 cids = {
     'AAPL': 22144,
@@ -34,51 +35,68 @@ cids = {
     'WSTI': 1115179957885739,
 }
 
-output_format = 'csv'
-active_stock = 'WSTI'  # 'TSLA'
+
+def get_historical_url(stock, form):
+    cid = cids[stock]
+    return f'http://www.google.com/finance/historical?' \
+           f'cid={cid}&' \
+           f'startdate=Jan+1%2C+1970&' \
+           f'enddate={today_formatted}&' \
+           f'output={form}'
 
 
-def get_historical_url():
-    return f'http://www.google.com/finance/historical?cid={cids[active_stock]}&startdate=Jan+1%2C+1970&enddate={today_formatted}&output={output_format}'
-
-
-def get_historical_csv():
-    res = requests.get(get_historical_url())
+def get_historical_csv(stock, form):
+    res = requests.get(get_historical_url(stock, form))
     return res.text
 
-# result = get_crumb()
-# soup = BeautifulSoup(result, 'html.parser')
-# pprint(soup.find_all('a'))
-text = get_historical_csv()
-data_split = text.splitlines()
-headers = data_split[0]
-texts = data_split[1:-1]
-new_texts = []
-for line in texts:
-    line_split = line.split(',')
-    date = line_split[0]
+
+def format_year(string):
+    string = 1900 + int(string)
+    if string <= 17:
+        string += 100
+    return f'{string}'
+
+
+def format_day(string):
+    if len(string) == 1:
+        return f'0{string}'
+    return string
+
+
+def _format_line(string: str) -> str:
+    string_split = string.split(',')
+    date = string_split[0]
     date_split = date.split('-')
-    if len(date_split[0]) == 1:
-        date_split[0] = f'0{date_split[0]}'
-    date_split[2] = int(date_split[2])
-    if date_split[2] > 17:
-        date_split[2] += 1900
-    else:
-        date_split[2] += 2000
-    date_split[2] = f'{date_split[2]}'
+    date_split[0] = format_day(date_split[0])
+    date_split[2] = format_year(date_split[2])
     date_combined = ''.join(date_split)
     date_formatted = datetime.strptime(date_combined, '%d%b%Y')
-    date_yyyymmdd = date_formatted.strftime('%Y%m%d')
-    line_split[0] = date_yyyymmdd
-    line_split = [f'{item},' for item in line_split]
-    line_split[len(line_split)-1] = line_split[len(line_split)-1][:-1]
-    joined_split = ''.join(line_split)
-    new_texts.append(f"{joined_split}")
-new_text = '\n'.join(sorted(set(new_texts)))
-new_text = f'{headers}\n{new_text}'
-path = pathlib.Path(sys.path[0])
-path_data = pathlib.Path(os.path.join(path, 'data'))
-if not path_data.is_dir():
-    path_data.mkdir()
-write_path = pathlib.Path(os.path.join(path_data, f'{active_stock}.{output_format}'))
-write_path.write_text(new_text, encoding='utf-8')
+    string_split[0] = date_formatted.strftime('%Y%m%d')
+    joined_split = ''.join([f'{item},' for item in string_split])
+    joined_split = joined_split[:-1]
+    return f"{joined_split}"
+
+    
+def _format_lines(string_list: list) -> list:
+    return [_format_line(line) for line in string_list]
+
+
+def _run(stock, form):
+    text = get_historical_csv(stock, form)
+    data_split = text.splitlines()
+    headers = data_split[0]
+    texts = data_split[1:-1]
+    new_texts = _format_lines(texts)
+    new_text = '\n'.join(sorted(set(new_texts)))
+    new_text = f'{headers}\n{new_text}'
+    path = pathlib.Path(sys.path[0])
+    path_data = pathlib.Path(os.path.join(path, 'data'))
+    if not path_data.is_dir():
+        path_data.mkdir()
+    write_path = pathlib.Path(os.path.join(path_data, f'{stock}.{form}'))
+    write_path.write_text(new_text, encoding='utf-8')
+
+
+def run():
+    for cid in cids:
+        _run(cids[cid], output_format)
