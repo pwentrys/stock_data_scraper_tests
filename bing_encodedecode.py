@@ -118,7 +118,7 @@ def _get_stripped_item(div):
     return stripped
 
 
-def run_item(string: str, stripped) -> bool:
+def run_item(string: str, stripped, timings_offset) -> bool:
     try:
         if stripped.startswith(timings_offset.bdy):
             return True
@@ -167,7 +167,7 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
             for item in b_algo:
                 _desc = _get_stripped_item(item)
                 item_str = str(item)
-                if run_item(item_str, _desc):
+                if run_item(item_str, _desc, timings_offset):
                     try:
                         title = SoupTags.using_h_re_compile(item_str, 'ID=SERP,')
                         _text, _desc, _href = OutputFormats.get_result(
@@ -193,9 +193,10 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
 def run():
     for key in datas:
         data = datas[key]
-        path = pathlib.Path(os.path.join(Statics.DATA_DIR, f'{data["name"]}.tsv'))
+        symbol = data['symbol']
+        path = pathlib.Path(os.path.join(Statics.DATA_DIR, f'{symbol}.tsv'))
         if not path.is_file():
-            _run(0, data['days'], data['pages'], data['symbol'], key)
+            _run(0, data['days'], data['pages'], symbol, key)
 
 
 if __name__ == '__main__':

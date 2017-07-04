@@ -6,7 +6,7 @@ class Timings:
     """
 
     """
-    SLEEP_TIME = 0.5
+    SLEEP_TIME = 0.025
     ESTIMATE_MULTI = 1.65
 
     def __init__(self):
