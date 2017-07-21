@@ -37,22 +37,16 @@ def _get_stripped_item(div):
 
 def run_item(string: str, stripped, timings_offset) -> bool:
     try:
-        print(f'CHECK - STRING: {string}')
-        print(f'CHECK - STRIPPED: {stripped}')
-        print(f'Offset Body: {timings_offset.bdy}')
         if stripped.startswith(timings_offset.bdy):
-            print(f'RETURNING TRUE')
             return True
         else:
             b_dt = SoupTags.using_type_and_class_one(string, 'span', 'news_dt')
             if b_dt is not None:
                 dt = OutputFormats.entry(b_dt.text)
                 if dt == timings_offset.days_ago:
-                    print(f'RETURNING TRUE')
                     return True
     except Exception as error:
         print(f'{error}')
-    print(f'RETURNING FALSE')
     return False
 
 
@@ -74,19 +68,14 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
     counter_items = 0
     sleep_time = timer.SLEEP_TIME
     final_results = []
-    print(f'offset_start: {offset_start}')
-    print(f'offset_end: {offset_end}')
     for _i in range(offset_start, offset_end):
         i = _i + 1
-        __counter = i
-        print(f'RUNNING I: {__counter}')
         timings_offset.update_num(_i)
         for j in range(0, pages):
             current_runs += 1
             timer.operation_logged()
             time.sleep(sleep_time)
             get_url = timings_offset.url_with_first_offset(j)
-            print(f'URL: {get_url}\nTS: {i*60*60*24}\nI: {i}')
             res = requests.get(get_url)
             text = res.text
 
@@ -114,12 +103,10 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
                         print(error)
 
         if counter_items > 50:
-            print(f'Adding {counter_items} for {symbol}.')
             tsver.append_current(final_results)
             counter_items = 0
 
     if len(final_results) > 0:
-        print(f'Adding {len(final_results)} for {symbol}.')
         tsver.append_current(final_results)
 
     timer.stop_logged()
@@ -176,13 +163,6 @@ def run():
             dt_max = dt_max.timestamp()/60/60/24
             dt_max = int(dt_max)
             if dt_max < today and today - dt_max != 0:
-                print(
-                    f'Day: {dt_max}\n'
-                    f'Today-1: {today}\n'
-                    f'Pages: {stock.pages}\n'
-                    f'Symbol: {stock.symbol}\n'
-                    f'Display: {stock.display}'
-                )
                 _run(dt_max, today, stock.pages, stock.symbol, stock.display)
             else:
                 print(f'No need to run {stock.symbol}.')
