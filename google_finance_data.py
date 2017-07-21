@@ -36,25 +36,25 @@ cids = {
 }
 
 
-def get_historical_url(stock, form):
-    cid = cids[stock]
+def get_historical_url(uid, form):
     return f'http://www.google.com/finance/historical?' \
-           f'cid={cid}&' \
+           f'cid={uid}&' \
            f'startdate=Jan+1%2C+1970&' \
            f'enddate={today_formatted}&' \
            f'output={form}'
 
 
-def get_historical_csv(stock, form):
-    res = requests.get(get_historical_url(stock, form))
+def get_historical_csv(uid, form):
+    res = requests.get(get_historical_url(uid, form))
     return res.text
 
 
 def format_year(string):
-    string = 1900 + int(string)
-    if string <= 17:
-        string += 100
-    return f'{string}'
+    year = int(string)
+    if year <= 17:
+        year += 100
+    year += 1900
+    return f'{year}'
 
 
 def format_day(string):
@@ -81,8 +81,8 @@ def _format_lines(string_list: list) -> list:
     return [_format_line(line) for line in string_list]
 
 
-def _run(stock, form):
-    text = get_historical_csv(stock, form)
+def _run(stock, uid, form):
+    text = get_historical_csv(uid, form)
     data_split = text.splitlines()
     headers = data_split[0]
     texts = data_split[1:-1]
@@ -98,5 +98,9 @@ def _run(stock, form):
 
 
 def run():
-    for cid in cids:
-        _run(cids[cid], output_format)
+    keys = cids.keys()
+    for key in keys:
+        _run(key, cids.get(key), output_format)
+
+
+run()
