@@ -94,6 +94,11 @@ datas = {
         'days': 1644,
         'pages': 1
     },
+    'WindStream_Tech_RG': {
+        'symbol': 'WSTI',
+        'days': 1380,
+        'pages': 1
+    },
 }
 
 dest = os.path.realpath(__file__)

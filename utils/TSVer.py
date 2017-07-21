@@ -36,9 +36,14 @@ class TSVer:
         :param items:
         """
         text = self._current_text()
-        split = text.splitlines()
+        if len(text) < 1:
+            split = []
+        else:
+            split = text.splitlines()
+
         split.extend(items)  # for item in items:
-        split = set(split)
-        split = sorted(split, key=lambda x: int(x.split('|')[0]))
-        self.current.write_text('\n'.join(split), encoding=Statics.UTF8)
+        if len(split) > 0:
+            split = set(split)
+            split = sorted(split, key=lambda x: int(x.split('|')[0]))
+            self.current.write_text('\n'.join(split), encoding=Statics.UTF8)
         items.clear()
