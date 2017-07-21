@@ -5,7 +5,7 @@ from utils.URLFormats import URLFormats
 
 class OutputFormats:
     BEGINS = []
-    CONTAINS = ['|', '·']
+    CONTAINS = ['|', '·', '•', '  ', '<strong>', '</strong>']
     ENDS = ['…', '...', '-']
 
     @staticmethod

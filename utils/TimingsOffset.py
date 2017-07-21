@@ -12,7 +12,7 @@ class TimingsOffset:
     def __init__(self, name: str):
         self.name = name
         self.today = TimingsOffset.TODAY
-        self.num = 0
+        self.num = 1
         self.td = self._update_timedelta()
         self.dt = self._update_datetime()
         self.ts = self._update_ts()
@@ -74,12 +74,15 @@ class TimingsOffset:
         return self.dt.strftime(DTFormats.YMD)
 
     def _update_datetime(self) -> datetime:
-        return self.today - self.td
+        int_sec = int(self.td.total_seconds())
+        print(int_sec)
+        return datetime.utcfromtimestamp(int_sec)
 
     def _update_timedelta(self) -> timedelta:
         return timedelta(days=self.num)
 
     def update_num(self, num: int):
+        num += 1
         if self.num != num:
             self.num = num
             self.update()

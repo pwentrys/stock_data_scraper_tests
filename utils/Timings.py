@@ -108,7 +108,12 @@ class Timings:
         :param offset_multi:
         :return:
         """
-        return op_its, op_its * offset_multi
+        print(f'op_its: {op_its}')
+        print(f'offset_multi: {offset_multi}')
+        try:
+            return op_its, op_its * offset_multi
+        except Exception as error:
+            return int(op_its), int(op_its) * int(offset_multi)
 
     def estimate_duration(self, operations: int, iterations: int):
         """

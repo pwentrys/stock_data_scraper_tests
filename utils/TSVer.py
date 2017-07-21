@@ -21,14 +21,14 @@ class TSVer:
             self.current, self.previous = Statics.get_tsv_path(self.symbol)
 
     def _current_text(self):
-        if self.current.is_file():
-            return self.current.read_text(encoding=Statics.UTF8)
-        else:
-            return Statics.EMPTY
+        if not self.current.is_file():
+            self.current.write_text('', encoding=Statics.UTF8)
+
+        return self.current.read_text(encoding=Statics.UTF8)
 
     def _move_current_to_previous(self):
         self.previous.write_text(self._current_text(), encoding=Statics.UTF8)
-        self.current.write_text(Statics.EMPTY)
+        # self.current.write_text(Statics.EMPTY)
 
     def append_current(self, items: list):
         """
@@ -38,5 +38,7 @@ class TSVer:
         text = self._current_text()
         split = text.splitlines()
         split.extend(items)  # for item in items:
-        self.current.write_text('\n'.join(set(split)), encoding=Statics.UTF8)
+        split = set(split)
+        split = sorted(split, key=lambda x: int(x.split('|')[0]))
+        self.current.write_text('\n'.join(split), encoding=Statics.UTF8)
         items.clear()

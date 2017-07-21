@@ -3,6 +3,8 @@ from models.stock import Stock
 
 class Stocks:
     def __init__(self, data):
+        if type(data) != type(list):
+            data = data.splitlines()
         self.data = data
         self.stocks = self._update()
 
