@@ -1,8 +1,12 @@
 import os
 import pathlib
+
+import datetime
 import requests
 import time
 
+from models.stocks import Stocks
+from utils.DateTimeFormats import DTFormats
 from utils.OutputFormats import OutputFormats
 from utils.SoupTags import SoupTags
 from utils.Statics import Statics
@@ -11,99 +15,14 @@ from utils.Timings import Timings
 from utils.TimingsOffset import TimingsOffset
 
 
-datas = {
-    'Arca_Biopharma': {
-        'symbol': 'ABIO',
-        'days': 3105,
-        'pages': 1
-    },
-    'AMD': {
-        'symbol': 'AMD',
-        'days': 14428,
-        'pages': 3
-    },
-    'Apple': {
-        'symbol': 'AAPL',
-        'days': 6756,
-        'pages': 3
-    },
-    'Preferred_Apartment_Communities': {
-        'symbol': 'APTS',
-        'days': 2375,
-        'pages': 1
-    },
-    'Cisco_Systems': {
-        'symbol': 'CSCO',
-        'days': 10045,
-        'pages': 3
-    },
-    'Dow_Chemical_Co': {
-        'symbol': 'DOW',
-        'days': 14428,
-        'pages': 1
-    },
-    'Creative_Edge_Nutrition_Inc': {
-        'symbol': 'FITX',
-        'days': 2740,
-        'pages': 1
-    },
-    'General_Electric_Company': {
-        'symbol': 'GE',
-        'days': 14428,
-        'pages': 3
-    },
-    'Golden_River_Resources_Corporation': {
-        'symbol': 'GORV',
-        'days': 2740,
-        'pages': 1
-    },
-    'Johnson_and_Johnson': {
-        'symbol': 'JNJ',
-        'days': 14428,
-        'pages': 1
-    },
-    'iRobot': {
-        'symbol': 'IRBT',
-        'days': 5000,
-        'pages': 3
-    },
-    'Microsoft': {
-        'symbol': 'MSFT',
-        'days': 6756,
-        'pages': 3
-    },
-    'Nvidia': {
-        'symbol': 'NVDA',
-        'days': 6756,
-        'pages': 3
-    },
-    'Reaves_Utility_Income_Fund': {
-        'symbol': 'UTG',
-        'days': 4932,
-        'pages': 1
-    },
-    'SpaceX': {
-        'symbol': 'SPACEX',
-        'days': 3000,
-        'pages': 3
-    },
-    'Tesla': {
-        'symbol': 'TSLA',
-        'days': 3000,
-        'pages': 3
-    },
-    'Virtus_Oil_and_Gas_Corp': {
-        'symbol': 'VOIL',
-        'days': 1644,
-        'pages': 1
-    },
-    'Westport_Fuel_Systems_Inc': {
-        'symbol': 'WPRT',
-        'days': 1644,
-        'pages': 1
-    },
-}
+path = os.path.join(Statics.SYSPATH, Statics.MODELS)
+path = os.path.join(path, Statics.STOCKS)
+path = pathlib.Path(path)
 
+if not path.is_file():
+    path = path.write_text('', encoding='utf-8')
+
+stocks = Stocks(path.read_text())
 Statics.ensure_dirs()
 
 
@@ -113,8 +32,6 @@ def _get_stripped_item(div):
     except Exception as error:
         stripped = div
         print(error)
-        # print(dir(stripped))
-        # print(f'stripped: {stripped}\n{error}')
     return stripped
 
 
@@ -190,13 +107,48 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
     timer.stop_logged()
 
 
+def get_today():
+    dt = datetime.datetime.now() - datetime.timedelta(days=1)
+
+    if dt.year < 1970:
+        while dt.year < 1970:
+            dt += datetime.timedelta(days=365)
+
+    if dt.hour != 0:
+        while dt.hour != 0:
+            dt -= datetime.timedelta(hours=1)
+
+    if dt.minute != 0:
+        while dt.minute != 0:
+            dt -= datetime.timedelta(minutes=1)
+
+    if dt.second != 0:
+        while dt.second != 0:
+            dt -= datetime.timedelta(seconds=1)
+
+    return int(dt.timestamp()/60/60/24)
+
+
 def run():
-    for key in datas:
-        data = datas[key]
-        symbol = data['symbol']
+    _stocks = stocks.stocks
+    today = get_today()
+    for stock in _stocks:
+        symbol = stock.symbol
         path = pathlib.Path(os.path.join(Statics.DATA_DIR, f'{symbol}.tsv'))
         if not path.is_file():
-            _run(0, data['days'], data['pages'], symbol, key)
+            _run(stock.day, today - 1, stock.pages, stock.symbol, stock.display)
+        else:
+            data = path.read_text(encoding='utf-8')
+            data_split = data.split('\n')
+            data_split = sorted(data_split, key=lambda x: int(x.split(',')[0]))
+            dt_max = data_split[len(data_split)-1]
+            dt_max = dt_max.split(',')[0]
+            dt_max = datetime.datetime.strptime(dt_max, DTFormats.YMD)
+            dt_max = dt_max.timestamp()/60/60/24
+            dt_max = int(dt_max) + 1
+            if dt_max < today and today - dt_max != 0:
+                _run(dt_max, today, stock.pages, stock.symbol, stock.display)
+
 
 
 if __name__ == '__main__':
