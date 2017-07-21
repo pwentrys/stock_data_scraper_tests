@@ -10,6 +10,8 @@ class Statics:
     PARSER = 'lxml-xml'  # html5lib
     UTF8 = 'utf-8'
     SYSPATH = syspath[0]
+    MODELS = 'models'
+    STOCKS = 'stocks.csv'
     HTMLS = 'htmls'
     DATA = 'data'
     WORK_DIR = Path(join(SYSPATH, HTMLS))
