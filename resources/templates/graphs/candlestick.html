@@ -41,6 +41,7 @@
     $(document).ready(function(){
         $.jqplot.config.enablePlugins = true;
         var plot1 = $.jqplot('chart1',{{ data_list|safe }},{
+            height: 900,
           title: '{{ symbol }}',
           axesDefaults:{},
           axes: {
@@ -51,6 +52,7 @@
                 }
               },
               yaxis: {
+                  min: 0,
                   tickOptions: {
                       formatString: '$%.2f'
                   }
@@ -134,9 +136,9 @@
         };
         $('#update_button').bind('click', function (event) {
             event.preventDefault();
-            symbol = $('input#symbol').val();
+            var sym = $('#symbol').val();
             var min_max = format_dts($('input#date_min').val(), $('input#date_max').val());
-            window.parent.open(window.location.origin + '/graphs/{{ ext }}/' + symbol.toLowerCase() + '/' + min_max[0] + '/' + min_max[1], '_self');
+            window.parent.open(window.location.origin + '/graphs/{{ ext }}/' + sym.toLowerCase() + '/' + min_max[0] + '/' + min_max[1], '_self');
         });
 
         {% for stock in stocks %}

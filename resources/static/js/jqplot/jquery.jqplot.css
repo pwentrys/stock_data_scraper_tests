@@ -2,10 +2,9 @@
 .jqplot-target {
     position: relative;
     color: #666666;
-    font-family: "Trebuchet MS", Arial, Helvetica, sans-serif;
+    font-family: "Roboto", Arial, Helvetica, sans-serif;
     font-size: 1em;
-/*    height: 300px;
-    width: 400px;*/
+    height: 90%;
 }
 
 /*rules applied to all axes*/
