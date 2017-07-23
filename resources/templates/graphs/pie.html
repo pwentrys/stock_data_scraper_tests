@@ -1,0 +1,49 @@
+{% extends "graphs/layout.html" %}
+{% block body %}
+
+
+    <div id="charts-holder" style="display:table;width: 90%;">
+<div id="chart1" class="code" style="margin:20px;"></div>
+    </div>
+
+<script class="code" type="text/javascript">
+    $(document).ready(function(){
+        $.jqplot.config.enablePlugins = true;
+        var plot1 = $.jqplot('chart1', [{{ data|safe }}],
+        {
+            height: 900,
+            title: '{{ symbol }} - {{ chart_title }}',
+            seriesDefaults: {
+                shadow: true,
+                renderer: jQuery.jqplot.PieRenderer,
+                rendererOptions: {
+                    sliceMargin: 2,
+                    showDataLabels: true,
+                    trendline:{ show:false },
+                }
+            },
+            legend: {
+                show: true,
+                location: 'w',
+                renderer: $.jqplot.EnhancedPieLegendRenderer,
+                rendererOptions: {
+                    numberColumns: 1,
+                    toolTips: {{ labels|safe }},
+                    background: "#101010",
+                }
+            },
+            grid: {
+                background: "#212121",
+                gridLineColor: '#323232',
+                drawBorder: false,
+                drawGridlines: false,
+            },
+        });
+
+    });
+ </script>
+
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.pieRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.enhancedPieLegendRenderer.js') }}"></script>
+
+{% endblock %}

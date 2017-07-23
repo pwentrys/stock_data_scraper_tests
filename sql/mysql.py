@@ -119,7 +119,7 @@ class Connection:
                           f'UID={SQL["USERNAME"]};' \
                           f'PWD={SQL["PASSWORD"]};'
             self.connection = pyodbc.connect(string_odbc)
-            self.connection.setdecoding(pyodbc.SQL_WCHAR, encoding=d.utf_8)
+            self.connection.setdecoding(pyodbc.SQL_CHAR, encoding=d.utf_8)
             self.connection.setencoding(encoding=d.utf_8)
             self.connected = True
             return self.connection
@@ -141,7 +141,7 @@ class Connection:
             if not self.connected:
                 return "ERROR"
 
-            result = self.cursor.execute(query)
+            result = self.cursor.execute(query).fetchall()
             return result
         except Exception as error:
             print(query)

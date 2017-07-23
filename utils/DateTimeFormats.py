@@ -5,4 +5,6 @@ class DTFormats:
 
     @staticmethod
     def dashenate(string: str) -> str:
-        return f'{string[0:4]}-{string[4:6]}-{string[6:8]}'
+        if not string.__contains__('-'):
+            return f'{string[0:4]}-{string[4:6]}-{string[6:8]}'
+        return string

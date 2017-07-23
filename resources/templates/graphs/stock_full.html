@@ -1,0 +1,131 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<div flex center layout vertical flex>
+    <div id="dates-holder" style="display:table;width: 90%;">
+        <div id="dates" style="display:table-row; padding-top:100px;width: 90%;">
+            <div style="display: table-cell;">
+                <select id="symbol">
+                    {% for stock in stocks %}
+                        <option id="stock_{{ stock }}">{{ stock }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div style="display: table-cell;">
+                Date Min: <input id="date_min" type="date">
+            </div>
+
+            <div style="display: table-cell;">
+                Date Max: <input id="date_max" type="date">
+            </div>
+
+            <div style="display: table-cell;">
+                <button name="update" id="update_button">Update</button>
+            </div>
+
+            <div style="display: table-cell;">
+                <button name="reload" id="reload_button">Reload</button>
+            </div>
+        </div>
+    </div>
+    <div id="charts-holder" style="display:table;width: 90%;">
+        {% for chart in charts %}
+        <div id="chart_{{ chart.uid }}" style="display:table-row;padding-top:100px;width:90%;height:900px;">
+            <div id="chart_{{ chart.uid }}__data"></div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<script class="code" type="text/javascript">
+    $(document).ready(function(){
+        $('#reload_button').bind('click', function (event) {
+            event.preventDefault();
+            window.parent.location.reload();
+        });
+                var url = window.location.toString();
+        url = url.replace(window.location.origin, '').substring(8);
+        var url_split = url.split('/');
+
+        if (url_split.length < 1 || url_split[0].length < 1) {
+            url_split[0] = 'symbol'
+        }
+        var form = url_split[0];
+
+        if (url_split.length < 2 || url_split[1].length < 2) {
+            url_split[1] = 'tsla'
+        }
+        var symbol = url_split[1];
+
+        if (url_split.length < 3 || url_split[2].length < 10) {
+            if (url_split[2].length === 8) {
+                var str_split_min = url_split[2].toString();
+                var min_year = str_split_min.substring(0, 4);
+                var min_month = str_split_min.substring(4, 6);
+                var min_day = str_split_min.substring(6, 8);
+                url_split[2] = min_year + '-' + min_month + '-' + min_day;
+            }
+            else {
+                url_split[2] = '1970-01-01';
+            }
+        }
+        var dt_min = url_split[2];
+
+        if (url_split.length < 4 || url_split[3].length < 10) {
+            if (url_split[3].length === 8) {
+                var str_split_max = url_split[3].toString();
+                var max_year = str_split_max.substring(0, 4);
+                var max_month = str_split_max.substring(4, 6);
+                var max_day = str_split_max.substring(6, 8);
+                url_split[3] = max_year + '-' + max_month + '-' + max_day;
+            }
+            else {
+                url_split[3] = new Date().toISOString().substring(0, 10);
+            }
+        }
+        var dt_max = url_split[3];
+
+        $('#symbol').val(symbol.toUpperCase());
+        $('#date_min').val(dt_min);
+        $('#date_max').val(dt_max);
+
+        var format_dt = function(input) {
+            while (input.indexOf('-') > -1) {
+                input = input.replace('-', '');
+            }
+            return input;
+        };
+        var format_dts = function(min, max){
+            min = format_dt(min);
+            max = format_dt(max);
+            return (min > max) ? [max, min] : [min, max];
+        };
+        $('#update_button').bind('click', function (event) {
+            event.preventDefault();
+            var sym = $('#symbol').val();
+            var min_max = format_dts($('input#date_min').val(), $('input#date_max').val());
+            window.parent.open(window.location.origin + '/graphs/{{ ext }}/' + sym.toLowerCase() + '/' + min_max[0] + '/' + min_max[1], '_self');
+        });
+
+        {% for stock in stocks %}
+            $('#stock_{{ stock }}').bind('click', function (event) {
+                event.preventDefault();
+                if ($(this).val() !== symbol.toUpperCase()) {
+                    var sym = $(this).prop('id');
+                    sym = sym.replace('stock_', '');
+                    sym = sym.split('_')[0];
+                    var min_max = format_dts($('input#date_min').val(), $('input#date_max').val());
+                    window.parent.open(window.location.origin + '/graphs/{{ ext }}/' + sym.toLowerCase() + '/' + min_max[0] + '/' + min_max[1], '_self');
+                }
+            });
+        {% endfor %}
+
+        {% for chart in charts %}
+            $('#chart_{{ chart.uid }}__data').load('{{ chart.url }}');
+        {% endfor %}
+
+    });
+ </script>
+
+{% endblock %}

@@ -35,11 +35,97 @@
             <div id="chart1" class="code" style="margin:20px;"></div>
         </div>
     </div>
+    <div id="pies-holder" style="display:table;width: 90%;">
+        <div id="pies1_holder" style="display:table-row; padding-top:100px;width: 90%;">
+            <div id="pies1" class="code" style="display:table-cell;margin:20px;"></div>
+        </div>
+        <div id="pies2_holder" style="display:table-row; padding-top:100px;width: 90%;">
+            <div id="pies2" class="code" style="display:table-cell;margin:20px;"></div>
+        </div>
+        <div id="pies3_holder" style="display:table-row; padding-top:100px;width: 90%;">
+            <div id="pies3" class="code" style="display:table-cell;margin:20px;"></div>
+        </div>
+    </div>
 </div>
 
 <script class="code" type="text/javascript">
     $(document).ready(function(){
         $.jqplot.config.enablePlugins = true;
+        var pies1 = jQuery.jqplot('pies1', [{{ words_all|safe }}],
+            {
+                height: 900,
+                title: 'All',
+                seriesDefaults: {
+                    shadow: false,
+                    renderer: jQuery.jqplot.PieRenderer,
+                    rendererOptions: { padding: 2, sliceMargin: 2, showDataLabels: true }
+                },
+                legend: {
+                    show: true,
+                    location: 'w',
+                    renderer: $.jqplot.EnhancedPieLegendRenderer,
+                    rendererOptions: {
+                        numberColumns: 1,
+                        toolTips: {{ words_all_labels|safe }},
+                        background: "#101010",
+                    }
+                },
+                grid: {
+                    background: "#212121",
+                    gridLineColor: '#323232',
+                },
+            }
+        );
+        var pies2 = jQuery.jqplot('pies2', [{{ words_inc|safe }}],
+            {
+                height: 900,
+                title: 'Increase',
+                seriesDefaults: {
+                    shadow: false,
+                    renderer: jQuery.jqplot.PieRenderer,
+                    rendererOptions: { padding: 2, sliceMargin: 2, showDataLabels: true }
+                },
+                legend: {
+                    show: true,
+                    location: 'w',
+                    renderer: $.jqplot.EnhancedPieLegendRenderer,
+                    rendererOptions: {
+                        numberColumns: 1,
+                        toolTips: {{ words_inc_labels|safe }},
+                        background: "#101010",
+                    }
+                },
+                grid: {
+                    background: "#212121",
+                    gridLineColor: '#323232',
+                },
+            }
+        );
+        var pies3 = jQuery.jqplot('pies3', [{{ words_dec|safe }}],
+            {
+                height: 900,
+                title: 'Decrease',
+                seriesDefaults: {
+                    shadow: false,
+                    renderer: jQuery.jqplot.PieRenderer,
+                    rendererOptions: { padding: 2, sliceMargin: 2, showDataLabels: true }
+                },
+                legend: {
+                    show: true,
+                    location: 'w',
+                    renderer: $.jqplot.EnhancedPieLegendRenderer,
+                    rendererOptions: {
+                        numberColumns: 1,
+                        toolTips: {{ words_dec_labels|safe }},
+                        background: "#101010",
+                    }
+                },
+                grid: {
+                    background: "#212121",
+                    gridLineColor: '#323232',
+                },
+            }
+        );
         var plot1 = $.jqplot('chart1',{{ data_list|safe }},{
             height: 900,
           title: '{{ symbol }}',
@@ -48,14 +134,15 @@
               xaxis: {
                   renderer:$.jqplot.DateAxisRenderer,
                   tickOptions: {
-                    formatString: '%Y-%#m-%#d'
+                    formatString: '%Y-%m-%d'
                 }
               },
               yaxis: {
-                  min: 0,
                   tickOptions: {
                       formatString: '$%.2f'
-                  }
+                  },
+                  min: 0,
+                  forceTickAt0: true
               }
           },
           series: [{renderer:$.jqplot.OHLCRenderer, rendererOptions:{candleStick:true}}],
@@ -65,6 +152,10 @@
               zoom: true,
               tooltipOffset: 10,
               tooltipLocation: 'se'
+          },
+          grid: {
+            background: "#212121",
+            gridLineColor: '#323232',
           },
           highlighter: {
               showMarker: false,
@@ -153,10 +244,13 @@
                 }
             });
         {% endfor %}
+
     });
  </script>
 
 <script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.dateAxisRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.pieRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.enhancedPieLegendRenderer.js') }}"></script>
 <script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.categoryAxisRenderer.js') }}"></script>
 <script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.ohlcRenderer.js') }}"></script>
 <script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.highlighter.js') }}"></script>

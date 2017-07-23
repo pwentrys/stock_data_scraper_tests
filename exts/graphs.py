@@ -1,5 +1,7 @@
+import requests
 from flask import render_template
 from flask_cors import cross_origin
+from utils.WordWorks import WordWorks
 from utils.DateTimeFormats import DTFormats
 
 
@@ -33,7 +35,7 @@ def setup(app):
             data.append(list(item))
 
         # ['2009-07-06', 138.7, 139.68, 135.18, 135.4],
-        print(data)
+        # print(data)
 
         return render_template('graphs/candlestick.html',
                                title=app.title,
@@ -44,10 +46,158 @@ def setup(app):
 
     def get_stock__id_name():
         items = app.sql.execute('SELECT id, name FROM stock_name;')
-        data = {}
+        res = {item[1]: item[0] for item in items}
+        res.__delitem__('AMD2')
+        res.__delitem__('CC')
+        res.__delitem__('DD')
+        res.__delitem__('DOW')
+        res.__delitem__('FITX')
+        res.__delitem__('GORV')
+        res.__delitem__('IRT')
+        res.__delitem__('SPACEX')
+        res.__delitem__('UTG')
+        res.__delitem__('VOIL')
+        res.__delitem__('WSTI')
+        return res
+    app.stock_id_map = get_stock__id_name()
+
+    def sort_words(dictionary: dict):
+        results_sorted = [[key, dictionary.get(key)] for key in dictionary]
+        # for result in dictionary:
+        #    results_sorted.append([dictionary.get(result), result])
+
+        results_sorted = sorted(results_sorted, key=lambda res: res[1], reverse=True)
+
+        word_count = 0
+        for item in results_sorted:
+            word_count += item[1]
+
+        if len(results_sorted) > 20:
+            results_sorted = results_sorted[:20]
+        return results_sorted
+
+    def get_stock_increase_days(stock_id, dt_min, dt_max):
+        items = app.sql.execute(f"SELECT timestamp FROM stock_price WHERE stock_id = {stock_id} AND timestamp >= '{dt_min}' and timestamp <= '{dt_max}' AND close > open;")
+        return [str(item[0]) for item in items]
+
+    def get_stock_words_by_date_all(items):
+        data = []
         for item in items:
-            data.update({item[1].upper(): item[0]})
-        return data
+            data.append(item[1])
+            data.append(item[2])
+        return sort_words(WordWorks.do_dict(data))
+
+    def get_stock_words_by_date_inc(items, dates):
+        data = []
+        for item in items:
+            if dates.__contains__(str(item[0])[0:10]):
+                data.append(item[1])
+                data.append(item[2])
+        return sort_words(WordWorks.do_dict(data))
+
+    def get_stock_words_by_date_dec(items, dates):
+        data = []
+        for item in items:
+            if not dates.__contains__(str(item[0])[0:10]):
+                data.append(item[1])
+                data.append(item[2])
+        return sort_words(WordWorks.do_dict(data))
+
+    def get_stock_words_by_date(stock_id, dt_min, dt_max):
+        items = app.sql.execute(f'SELECT timestamp, title, description '
+                                f'FROM stock_scrape '
+                                f'WHERE stock_id = {stock_id} AND timestamp >= \'{dt_min}\' AND timestamp <= \'{dt_max}\';'
+                                )
+        increase_days = get_stock_increase_days(stock_id, dt_min, dt_max)
+        return [
+            get_stock_words_by_date_all(items),
+            get_stock_words_by_date_inc(items, increase_days),
+            get_stock_words_by_date_dec(items, increase_days)
+        ]
+
+    class ReplaceChar:
+        def __init__(self, key, val):
+            self.source = key
+            self.target = val
+
+    def clean_sql_specials():
+        items = [
+            ReplaceChar('’', "\\'"),
+            ReplaceChar('é', 'e'),
+            ReplaceChar('💯', ''),
+            ReplaceChar('👍', ''),
+            ReplaceChar('💎', ''),
+            ReplaceChar('😂', ''),
+            ReplaceChar('🍍', ''),
+            ReplaceChar('🍎', ''),
+            ReplaceChar('💞', ''),
+            ReplaceChar('📡', ''),
+            ReplaceChar('👽', ''),
+        ]
+        fixes = 0
+        columns = ['title', 'description']
+        for item in items:
+            for column in columns:
+                app.sql.execute(f"UPDATE stock_scrape SET {column} = replace({column}, '{item.source}', '{item.target}');")
+                fixes += 1
+        if fixes > 0:
+            app.sql.commit()
+            return True
+        return False
+
+    @app.route('/sql/stock_scrape/clean')
+    @app.route('/sql/stock_scrape/clean/')
+    @cross_origin()
+    def clean_sql_table():
+        success = clean_sql_specials()
+        return render_template('default.html',
+                               title=app.title,
+                               html=f"""
+                               Success: {success}
+                               """
+                               )
+
+    class Chart:
+        def __init__(self, uid, url):
+            self.uid = uid
+            self.url = url
+            self.offset = f'{900*self.uid}px'
+            self.html = ''  # requests.get(url).text
+
+    def graphs_format_base(symbol: str, dt_min__yyyymmdd: str, dt_max__yyyymmdd: str):
+        symbol = symbol.upper()
+        dt_min__yyyymmdd = DTFormats.dashenate(dt_min__yyyymmdd)
+        dt_max__yyyymmdd = DTFormats.dashenate(dt_max__yyyymmdd)
+
+        stock_id_name_map = app.stock_id_map  # get_stock__id_name()
+        if stock_id_name_map.__contains__(symbol):
+            name_id = stock_id_name_map[symbol]
+            stock_ids = app.sql.execute(f'SELECT id FROM stock where name_id = {name_id};')
+            stock_id = 0
+            for ids in stock_ids:
+                stock_id = ids[0]
+        else:
+            stock_id = 0
+        return stock_id, dt_min__yyyymmdd, dt_max__yyyymmdd
+
+    @app.route('/graphs/all/<string:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>')
+    @app.route('/graphs/all/<string:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>/')
+    @cross_origin()
+    def graphs__all_symbol_dt_minmax(symbol: str, dt_min__yyyymmdd: str, dt_max__yyyymmdd: str):
+        stock_id, dt_min, dt_max = graphs_format_base(symbol, dt_min__yyyymmdd, dt_max__yyyymmdd)
+        charts = [
+            Chart(0, f'http://192.168.1.172:1988/graphs/pie/{stock_id}/{dt_min__yyyymmdd}/{dt_max__yyyymmdd}/0/'),
+            Chart(1, f'http://192.168.1.172:1988/graphs/pie/{stock_id}/{dt_min__yyyymmdd}/{dt_max__yyyymmdd}/1/'),
+            Chart(2, f'http://192.168.1.172:1988/graphs/pie/{stock_id}/{dt_min__yyyymmdd}/{dt_max__yyyymmdd}/2/'),
+        ]
+
+        return render_template('graphs/stock_full.html',
+                               title=app.title,
+                               symbol=symbol,
+                               stocks=app.stock_id_map.keys(),
+                               ext='all',
+                               charts=charts
+                               )
 
     @app.route('/graphs/candlestick/<string:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>')
     @app.route('/graphs/candlestick/<string:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>/')
@@ -58,24 +208,29 @@ def setup(app):
         :return:
         """
         symbol = symbol.upper()
+        dt_min__yyyymmdd = DTFormats.dashenate(dt_min__yyyymmdd)
+        dt_max__yyyymmdd = DTFormats.dashenate(dt_max__yyyymmdd)
+
         stock_id_name_map = get_stock__id_name()
         if stock_id_name_map.__contains__(symbol):
             name_id = stock_id_name_map[symbol]
+            stock_ids = app.sql.execute(f'SELECT id FROM stock where name_id = {name_id};')
+            stock_id = 0
+            for ids in stock_ids:
+                stock_id = ids[0]
+
             items = app.sql.execute('SELECT timestamp, open, high, low, close '
                                     'FROM stock_price '
-                                    f'WHERE stock_id = (SELECT id FROM stock where name_id = {name_id}) '
-                                    f'AND timestamp >= \'{DTFormats.dashenate(dt_min__yyyymmdd)}\' '
-                                    f'AND timestamp <= \'{DTFormats.dashenate(dt_max__yyyymmdd)}\' '
-                                    'order by timestamp asc;'
+                                    f'WHERE stock_id = {stock_id} '
+                                    f"AND timestamp >= \'{dt_min__yyyymmdd}\' "
+                                    f"AND timestamp <= \'{dt_max__yyyymmdd}\' "
+                                    'ORDER BY timestamp ASC;'
                                     )
+            words = get_stock_words_by_date(stock_id, dt_min__yyyymmdd, dt_max__yyyymmdd)
         else:
             items = []
-        """
-            <select id="single">
-                <option>Single</option>
-                <option>Single2</option>
-            </select>
-        """
+            words = [[], [], []]
+
         data = []
         # TS, Open, High, Low, Close
         for item in items:
@@ -87,7 +242,55 @@ def setup(app):
                                symbol=symbol,
                                ext='candlestick',
                                data_list=[data],
-                               stocks=stock_id_name_map.keys()
+                               stocks=stock_id_name_map.keys(),
+                               words_all=words[0],
+                               words_inc=words[1],
+                               words_dec=words[2],
+                               words_all_labels=[f'{word[0]} ({word[1]})' for word in words[0]],
+                               words_inc_labels=[f'{word[0]} ({word[1]})' for word in words[1]],
+                               words_dec_labels=[f'{word[0]} ({word[1]})' for word in words[2]]
+                               )
+
+    PIE_TYPEMAP = {
+        0: 'ALL',
+        1: 'INCREASE',
+        2: 'DECREASE',
+    }
+    @app.route('/graphs/pie/<int:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>/<int:type_id>')
+    @app.route('/graphs/pie/<int:symbol>/<string:dt_min__yyyymmdd>/<string:dt_max__yyyymmdd>/<int:type_id>/')
+    @cross_origin()
+    def graphs__pie_symbol_dt_minmax(symbol: int, dt_min__yyyymmdd: str, dt_max__yyyymmdd: str, type_id: int):
+        """
+
+        :return:
+        """
+        dt_min = DTFormats.dashenate(dt_min__yyyymmdd)
+        dt_max = DTFormats.dashenate(dt_max__yyyymmdd)
+
+        items = app.sql.execute(f'SELECT timestamp, title, description '
+                                f'FROM stock_scrape '
+                                f'WHERE stock_id = {symbol} AND timestamp >= \'{dt_min}\' AND timestamp <= \'{dt_max}\';'
+                                )
+        if type_id == 1:
+            words = get_stock_words_by_date_inc(items,
+                get_stock_increase_days(symbol, dt_min, dt_max)
+            )
+        elif type_id == 2:
+            words = get_stock_words_by_date_dec(items,
+                                            get_stock_increase_days(symbol, dt_min, dt_max)
+                                            )
+        else:
+            words = get_stock_words_by_date_all(items)
+
+        words = words[type_id]
+        return render_template('graphs/pie.html',
+                               title=app.title,
+                               symbol=symbol,
+                               ext='pie',
+                               stocks=app.stock_id_map.keys(),
+                               data=words,
+                               labels=[f'{word[0]} ({word[1]})' for word in words],
+                               chart_title=PIE_TYPEMAP.get(type_id, 'ERROR')
                                )
 
     @app.route('/graphs/zoomproxy')
