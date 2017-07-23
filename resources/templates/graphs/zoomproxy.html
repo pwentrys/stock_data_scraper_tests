@@ -1,0 +1,74 @@
+
+{% extends "graphs/layout.html" %}
+{% block body %}
+<div flex center layout vertical flex>
+    <div class="jqPlot" id="chart1" style="height:320px; width:90%;"></div>
+    <div class="jqPlot" id="chart2" style="margin-top: 30px; height:100px; width:90%;"></div>
+</div>
+
+  <script type="text/javascript" class="code">
+    $(document).ready(function(){
+        var InPr = {{ InPr|safe }};
+        var OutPr = {{ OutPr|safe }};
+        var ERPM = {{ ERPM|safe }};
+      // InPr, OutPr and ERPM are defined separately.  They are large datasets.
+      var targetPlot = $.jqplot('chart1', [InPr, OutPr, ERPM], {
+        seriesDefaults:{ showMarker: false },
+        series:[
+          {label:'P In'},
+          {label:'P Out', yaxis:'y2axis'},
+          {label:'RPM', yaxis:'y3axis'},
+        ],
+        cursor:{
+          show: true,
+          zoom:true,
+          showTooltip: false
+        },
+        legend:{
+          location:'nw',
+          xoffset: 270,
+          yoffset: 100
+        },
+        axesDefaults: {
+          useSeriesColor:true,
+          rendererOptions: {
+            alignTicks: true
+          }
+        }
+      });
+
+      var controllerPlot = $.jqplot('chart2', [InPr, OutPr, ERPM], {
+        seriesDefaults:{ showMarker: false },
+        series:[
+          {label:'P In'},
+          {label:'P Out', yaxis:'y2axis'},
+          {label:'RPM', yaxis:'y3axis'},
+        ],
+        cursor:{
+          show: true,
+          showTooltip: false,
+          zoom:true,
+          constrainZoomTo: 'x'
+        },
+        axesDefaults: {
+          useSeriesColor:true,
+          rendererOptions: {
+            alignTicks: true
+          }
+        }
+      });
+
+      $.jqplot.Cursor.zoomProxy(targetPlot, controllerPlot);
+
+      $.jqplot._noToImageButton = true;
+
+    });
+</script>
+
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.dateAxisRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.categoryAxisRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.ohlcRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.highlighter.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.cursor.js') }}"></script>
+
+{% endblock %}

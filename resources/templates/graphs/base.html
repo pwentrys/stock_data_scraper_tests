@@ -1,0 +1,39 @@
+{% extends "graphs/layout.html" %}
+{% block body %}
+<div flex center layout vertical>
+    <div style="padding-top:10px;width: 1450px;">
+        <div style="display:inline-block">
+            <button name="reload" id="reload_button">Reload</button>
+        </div>
+    </div>
+        <br>
+    <div style="padding-top:50px">
+    {% for graph in graphs %}
+        <div id="row_{{ graph }}" style="display:table-row; width: 1450px; padding-top:25px">
+            <div id="row_{{ graph }}__name" style="display: table-cell; width: 1450px;">
+                - {{ graph }}
+            </div>
+        </div>
+        <br>
+    {% endfor %}
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        $('#reload_button').bind('click', function (event) {
+            event.preventDefault();
+            window.parent.location.reload();
+        });
+        {% for graph in graphs %}
+            $('#row_{{ graph }}__name').bind('click', function (event) {
+                event.preventDefault();
+                window.open(window.parent.location.origin + '/graphs/{{ graph }}', '_self');
+            });
+        {% endfor %}
+    });
+</script>
+<div flex center layout vertical flex>
+    <div style="padding-top:50px">{{ html|safe }}</div>
+</div>
+{% endblock %}

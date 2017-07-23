@@ -1,0 +1,52 @@
+
+{% extends "graphs/layout.html" %}
+{% block body %}
+<div flex center layout vertical flex>
+    <div id="chart1" class="code" style="width:90%;height:80%;margin:20px;"></div>
+</div>
+
+<script class="code" type="text/javascript">
+    $(document).ready(function(){
+        $.jqplot.config.enablePlugins = true;
+        var plot1 = $.jqplot('chart1',[{{ data_list|safe }}],{
+          title: 'Chart',
+          axesDefaults:{},
+          axes: {
+              xaxis: {
+                  renderer:$.jqplot.DateAxisRenderer,
+                  tickOptions: {
+                    formatString: '%#m/%#d/%Y'
+                },
+                numberTicks: 4
+              },
+              yaxis: {
+                  tickOptions: {
+                      formatString: '$%.2f'
+                  }
+              }
+          },
+          series: [{renderer:$.jqplot.OHLCRenderer, rendererOptions:{candleStick:true}}],
+          cursor:{
+              constrainOutsizeZoom: false,
+              looseZoom: true,
+              zoom: true,
+              tooltipOffset: 10,
+              tooltipLocation: 'nw'
+          },
+          highlighter: {
+              showMarker: false,
+              tooltipAxes: 'xy',
+              yvalues: 4,
+              formatString:'<table class="jqplot-highlighter"><tr><td>date:</td><td>%s</td></tr><tr><td>open:</td><td>%s</td></tr><tr><td>hi:</td><td>%s</td></tr><tr><td>low:</td><td>%s</td></tr><tr><td>close:</td><td>%s</td></tr></table>'
+          }
+        });
+    });
+ </script>
+
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.dateAxisRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.categoryAxisRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.ohlcRenderer.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.highlighter.js') }}"></script>
+<script class="include" type="text/javascript" src="{{ url_for('static', filename='js/jqplot/plugins/jqplot.cursor.js') }}"></script>
+
+{% endblock %}
