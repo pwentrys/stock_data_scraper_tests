@@ -10,6 +10,7 @@ nltk
 # numpydoc
 lxml>=3.8.0
 packaging
+pyodbc
 # pandas
 # path.py
 # pathlib2
