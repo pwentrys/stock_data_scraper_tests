@@ -6,7 +6,6 @@
 
 from config.configuration import DEBUG, DISPLAY, NAME, IP, PORT, THREADED
 from flaskfactory import FlaskFactory as Factory
-from sql import mysql
 
 # --------------------------------------------------------------------------- #
 #                                                                             #
@@ -14,4 +13,3 @@ from sql import mysql
 #                                                                             #
 # --------------------------------------------------------------------------- #
 app = Factory.create(NAME, DISPLAY, IP, PORT, DEBUG, THREADED)
-app.sql = mysql.Connection()

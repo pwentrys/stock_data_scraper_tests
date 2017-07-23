@@ -10,6 +10,8 @@ from flask import Flask
 
 from config.configuration import SESSION_LIFETIME, STATIC, TEMPLATES
 import base64
+from sql import mysql
+
 
 # --------------------------------------------------------------------------- #
 #                                                                             #
@@ -113,6 +115,8 @@ class FlaskFactory:
             static_folder=STATIC,
             template_folder=TEMPLATES
         )
+
+        app.sql = mysql.Connection()
 
         display_name = FlaskFactory._format_abbrev(display)
         app.__name__ = display_name
