@@ -60,7 +60,7 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
     timer = Timings()
     tsver = TSVer(symbol)
     timings_offset = TimingsOffset(stock_name)
-    if type(pages) != type(int):
+    if not isinstance(pages, type(int)):
         pages = int(pages)
     timer.estimate_duration(offset_end - offset_start, pages)
     timer.start_logged()
@@ -83,7 +83,8 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
             # requests_html.write_text(text, encoding=Statics.UTF8)
 
             b_results = SoupTags.using_type_and_id(text, 'ol', 'b_results')
-            b_algo = SoupTags.using_type_and_class(str(b_results), 'li', 'b_algo')
+            b_algo = SoupTags.using_type_and_class(
+                str(b_results), 'li', 'b_algo')
 
             for item in b_algo:
                 _desc = _get_stripped_item(item)
@@ -91,13 +92,15 @@ def _run(offset_start: int, offset_end: int, pages: int, symbol, stock_name):
                 item_str = item_str.replace(' H=', ' h=')
                 if run_item(item_str, _desc, timings_offset):
                     try:
-                        title = SoupTags.using_h_re_compile(item_str, 'ID=SERP,')
+                        title = SoupTags.using_h_re_compile(
+                            item_str, 'ID=SERP,')
                         _text, _desc, _href = OutputFormats.get_result(
                             title.text,
                             _desc.replace(timings_offset.bdy, ''),
                             title.get('href')
                         )
-                        final_results.append(f'{timings_offset.ymd}|{_href}|{_text}|{_desc}')
+                        final_results.append(
+                            f'{timings_offset.ymd}|{_href}|{_text}|{_desc}')
                         counter_items += 1
                     except Exception as error:
                         print(error)
@@ -131,7 +134,7 @@ def get_today():
         while dt.second != 0:
             dt -= datetime.timedelta(seconds=1)
 
-    return int(dt.timestamp()/60/60/24)
+    return int(dt.timestamp() / 60 / 60 / 24)
 
 
 def run():
@@ -148,7 +151,7 @@ def run():
             #     f'Symbol: {stock.symbol}\n'
             #     f'Display: {stock.display}'
             # )
-             _run(stock.day, today, stock.pages, stock.symbol, stock.display)
+            _run(stock.day, today, stock.pages, stock.symbol, stock.display)
         else:
             data = path.read_text(encoding='utf-8')
             data_split = data.splitlines()
@@ -157,10 +160,10 @@ def run():
             if data_joined != data:
                 path.write_text(data_joined, encoding='utf-8')
 
-            dt_max = data_split[len(data_split)-1]
+            dt_max = data_split[len(data_split) - 1]
             dt_max = dt_max.split('|')[0]
             dt_max = datetime.datetime.strptime(dt_max, DTFormats.YMD)
-            dt_max = dt_max.timestamp()/60/60/24
+            dt_max = dt_max.timestamp() / 60 / 60 / 24
             dt_max = int(dt_max)
             if dt_max < today and today - dt_max != 0:
                 _run(dt_max, today, stock.pages, stock.symbol, stock.display)

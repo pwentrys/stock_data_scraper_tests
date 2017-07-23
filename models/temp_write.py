@@ -138,7 +138,7 @@ for dkey in datas:
         while days.second != 0:
             days -= datetime.timedelta(seconds=1)
 
-    days_int = int(days.timestamp()/60/60/24)
+    days_int = int(days.timestamp() / 60 / 60 / 24)
     pages = data['pages']
     # ,{datetime.datetime.fromtimestamp(days.timestamp())}
     lines.append(f'{days_int},{dkey},{symbol},{pages}')

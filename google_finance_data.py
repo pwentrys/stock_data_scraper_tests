@@ -76,7 +76,7 @@ def _format_line(string: str) -> str:
     joined_split = joined_split[:-1]
     return f"{joined_split}"
 
-    
+
 def _format_lines(string_list: list) -> list:
     return [_format_line(line) for line in string_list]
 

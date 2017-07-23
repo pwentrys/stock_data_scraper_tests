@@ -70,5 +70,5 @@ class OutputFormats:
         :return:
         """
         return OutputFormats.title(title), \
-               OutputFormats.description(desc), \
-               OutputFormats.link(link)
+            OutputFormats.description(desc), \
+            OutputFormats.link(link)

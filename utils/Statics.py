@@ -29,7 +29,8 @@ class Statics:
         :param symbol:
         :return:
         """
-        return Statics._get_tsv_path(symbol), Statics._get_tsv_path(f'{symbol}_PREV')
+        return Statics._get_tsv_path(
+            symbol), Statics._get_tsv_path(f'{symbol}_PREV')
 
     @staticmethod
     def ensure(directory):

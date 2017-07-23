@@ -24,11 +24,12 @@ class Timings:
         Start timer.
         :return:
         """
-        self._counter, self._start, self._stop_estimate = Timings._calculate_stop_estimate(time(),
-                                                                                           self._duration_estimate)
+        self._counter, self._start, self._stop_estimate = Timings._calculate_stop_estimate(
+            time(), self._duration_estimate)
 
     @staticmethod
-    def _calculate_stop_estimate(start: float, duration: float) -> Tuple[int, float, float]:
+    def _calculate_stop_estimate(
+            start: float, duration: float) -> Tuple[int, float, float]:
         """
         Calculate stop estimates.
         :param start:
@@ -55,8 +56,8 @@ class Timings:
         Stop timer.
         :return:
         """
-        self._stop, self._duration_actual, self._duration_error = Timings._calculate_duration(self._start, time(),
-                                                                                              self._duration_estimate)
+        self._stop, self._duration_actual, self._duration_error = Timings._calculate_duration(
+            self._start, time(), self._duration_estimate)
 
     def stop_logged(self):
         """
@@ -77,17 +78,21 @@ class Timings:
         ]))
 
     @staticmethod
-    def _calculate_duration_and_diff(estimate: float, actual: float) -> Tuple[float, float]:
+    def _calculate_duration_and_diff(
+            estimate: float, actual: float) -> Tuple[float, float]:
         """
         Calculate duration and errors.
         :param estimate:
         :param actual:
         :return:
         """
-        return actual, (estimate - actual) if estimate > actual else (actual - estimate)
+        return actual, (estimate -
+                        actual) if estimate > actual else (actual -
+                                                           estimate)
 
     @staticmethod
-    def _calculate_duration(start: float, stop: float, estimate: float) -> Tuple[float, float, float]:
+    def _calculate_duration(start: float, stop: float,
+                            estimate: float) -> Tuple[float, float, float]:
         """
         Get duration and errors calculated.
         :param start:
@@ -95,11 +100,13 @@ class Timings:
         :param estimate:
         :return:
         """
-        duration, difference = Timings._calculate_duration_and_diff(estimate, stop - start)
+        duration, difference = Timings._calculate_duration_and_diff(
+            estimate, stop - start)
         return stop, duration, difference
 
     @staticmethod
-    def _estimate_duration(op_its: int, offset_multi: float) -> Tuple[float, float]:
+    def _estimate_duration(
+            op_its: int, offset_multi: float) -> Tuple[float, float]:
         """
         Calculate run time estimate.
 
@@ -122,8 +129,8 @@ class Timings:
         :param iterations:
         :return:
         """
-        self._op_its, self._duration_estimate = Timings._estimate_duration(operations * iterations,
-                                                                           self.SLEEP_TIME * self.ESTIMATE_MULTI)
+        self._op_its, self._duration_estimate = Timings._estimate_duration(
+            operations * iterations, self.SLEEP_TIME * self.ESTIMATE_MULTI)
 
     @staticmethod
     def _operation_logged(counter: int, total: int, start: float) -> int:
@@ -142,4 +149,5 @@ class Timings:
         Increment counter and log progress.
         :return:
         """
-        self._counter = Timings._operation_logged(self._counter + 1, self._op_its, self._start)
+        self._counter = Timings._operation_logged(
+            self._counter + 1, self._op_its, self._start)
