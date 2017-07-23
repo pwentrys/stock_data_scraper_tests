@@ -4,7 +4,7 @@
 #                                                                             #
 # --------------------------------------------------------------------------- #
 
-from config.configuration import DEBUG, NAME, IP, PORT, THREADED
+from config.configuration import DEBUG, DISPLAY, NAME, IP, PORT, THREADED
 from flaskfactory import FlaskFactory as Factory
 
 # --------------------------------------------------------------------------- #
@@ -12,4 +12,4 @@ from flaskfactory import FlaskFactory as Factory
 #                       Default Configuration                                 #
 #                                                                             #
 # --------------------------------------------------------------------------- #
-app = Factory.create(NAME, IP, PORT, DEBUG, THREADED)
+app = Factory.create(NAME, DISPLAY, IP, PORT, DEBUG, THREADED)

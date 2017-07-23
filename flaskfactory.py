@@ -93,6 +93,7 @@ class FlaskFactory:
     @staticmethod
     def create(
             name: str,
+            display: str,
             address: str,
             port: int,
             debug: bool,
@@ -113,7 +114,7 @@ class FlaskFactory:
             template_folder=TEMPLATES
         )
 
-        display_name = FlaskFactory._format_abbrev(name)
+        display_name = FlaskFactory._format_abbrev(display)
         app.__name__ = display_name
         app.title = display_name
         app.config.from_object(name.lower())
