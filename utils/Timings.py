@@ -118,9 +118,9 @@ class Timings:
         print(f'op_its: {op_its}')
         print(f'offset_multi: {offset_multi}')
         try:
-            return op_its, op_its * offset_multi
+            return op_its, (op_its * offset_multi) * 10.0000000
         except Exception as error:
-            return int(op_its), int(op_its) * int(offset_multi)
+            return int(op_its), int(op_its) * int(offset_multi) * 10
 
     def estimate_duration(self, operations: int, iterations: int):
         """
